@@ -37,3 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// JavaScript can be added in 3 ways:
+// Inline – directly inside an HTML tag (onclick, etc.)
+// Internal – inside a <script> tag in the HTML file
+// External – linked via a .js file (this is best)
+// Preferred method: External JS files. It's cleaner, keeps the logic separate, and makes the code easier to update or reuse.
