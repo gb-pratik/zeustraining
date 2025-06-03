@@ -1,44 +1,49 @@
 body {
-    background-color: rgb(240, 240, 196);
-    /* box-shadow: 0 0 0 20px #a7783b; */
+    background-color: #FFFFCC;
 }
 
 h2 {
-    background-color: green;
+    background-color: #009900;
     color: white;
+    padding-left: 15px;
 }
 
 h1 {
     text-align: center;
-    background-color: darkred;
+    background-color: #990000;
     color: rgb(240, 240, 196);
     font-family: Arial, sans-serif;
     font-style: oblique;
     height: 40px;
     margin-bottom: 0;
-    letter-spacing: 5px;
+    letter-spacing: 10px;
+    word-spacing: 10px;
 }
 
 #randomtable1 {
-    border: 3px solid black;
+    border: 2px solid black;
     border-collapse: separate;
     border-spacing: 4px;
-    background-color: rgb(167, 165, 165);
+    background-color: #CCCCCC;
 }
 
 #randomtable1 th,
 #randomtable1 td {
     border: 2px solid black;
-    background-color: rgb(167, 165, 165);
+    background-color: #CCCCCC;
 }
 
 #coloredText {
-    color: brown;
+    color: #AE362B;
 }
 
 #zeusLink {
-    color: rgb(110, 23, 180);
-    text-decoration: underline;
+    color: #9A3590;
+    text-decoration: none;
+}
+
+h3 {
+    color: #666666;
 }
 
 

@@ -16,14 +16,10 @@ A basic HTML page includes:
 
 Difference Between Inline and Block Elements
 
-Block-level elements:
-Take up the full width of the page.
-Always start on a new line.
+Block-level elements: Take up the full width of the page. Always start on a new line.
 Examples: <div>, <p>, <h1>
 
-Inline elements:
-Only take up as much space as the content inside.
-Don’t start on a new line.
+Inline elements: Only take up as much space as the content inside. Don’t start on a new line.
 Examples: <span>, <a>, <strong>
 In short, block elements stack vertically, while inline elements flow horizontally within a block.
 
