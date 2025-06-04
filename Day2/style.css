@@ -1,0 +1,23 @@
+#interaction-data {
+    color: rgb(88, 86, 86);
+}
+
+#card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: auto;
+    width: fit-content;
+    background-color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 1.5px 6px rgba(0,0,0,0.9);
+}
+
+.icon {
+    opacity: 0.6;
+}
+
+#tweet {
+    opacity: 1;
+    font-weight: bold;
+}
