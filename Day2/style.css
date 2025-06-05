@@ -1,8 +1,12 @@
-#interaction-data {
-    color: rgb(88, 86, 86);
+.interaction-data {
+    color: #858991;
+    font-family: Roboto, sans-serif;
+    font-size: 15px;
+    display: flex;
+    gap: 24px;
 }
 
-#card {
+.tweet-container {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -10,14 +14,47 @@
     margin: auto;
     width: fit-content;
     background-color: white;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 1.5px 6px rgba(0,0,0,0.9);
+    border: 1px solid #000000;
+    display: flex;
+    padding: 4px;
+    gap: 14px;
 }
 
 .icon {
     opacity: 0.6;
 }
 
-#tweet {
-    opacity: 1;
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 14px;
+}
+
+.tweet {
+    /* font-weight: bold; */
+    font-family: Roboto, sans-serif;
+    font-size: 20px;
+}
+
+.username {
+    font-size: 20px;
+    font-family: Roboto, sans-serif;
     font-weight: bold;
+    justify-content: center;
+}
+
+.icon-data {
+    display: flex;
+    gap: 14px;
+}
+
+.text-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+p {
+    margin: 0;
 }
