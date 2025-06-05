@@ -1,45 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('form');
-    const nameInput = document.getElementById('name');
-    const commentsInput = document.getElementById('comments');
-    const genderInputs = document.getElementsByName('gender');
+    const nameIn = document.getElementById('name');
+    const commentsIn = document.getElementById('comments');
+    const genderIns = document.getElementsByName('gender');
 
-    form.addEventListener('submit', function (e) {
-        let valid = true;
-        let errorMsg = '';
+    form.addEventListener('submit', function (e) 
+    {
+        let val = true;
+        let msg = '';
 
-        if (!nameInput.value.trim()) {
-            valid = false;
-            errorMsg += 'Name is required.\n';
+        if (!nameIn.value.trim()) {
+            val = false;
+            msg += 'Name is required.\n';
         }
 
-        if (!commentsInput.value.trim()) {
-            valid = false;
-            errorMsg += 'Comments are required.\n';
+        if (!commentsIn.value.trim()) {
+            val = false;
+            msg += 'Comments are required.\n';
+        }
+        let flag = false;
+        if (genderIns[0].checked) {
+            flag = true;
+        }
+        if (genderIns[1].checked) {
+            flag = true;
         }
 
-        let genderSelected = false;
-        if (genderInputs[0].checked) {
-            genderSelected = true;
-        }
-        if (genderInputs[1].checked) {
-            genderSelected = true;
+        if (!flag) {
+            val = false;
+            msg += 'Please select a gender.\n';
         }
 
-        if (!genderSelected) {
-            valid = false;
-            errorMsg += 'Please select a gender.\n';
-        }
-
-        if (!valid) {
+        if (!val) {
             e.preventDefault();
-            alert(errorMsg);
+            alert(msg);
         }
     });
 });
-
-// JavaScript can be added in 3 ways:
-// Inline – directly inside an HTML tag (onclick, etc.)
-// Internal – inside a <script> tag in the HTML file
-// External – linked via a .js file (this is best)
-// Preferred method: External JS files. It's cleaner, keeps the logic separate, and makes the code easier to update or reuse.

@@ -1,8 +1,9 @@
 body {
     background-color: #FFFFCC;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-h2 {
+h3.headings {
     background-color: #009900;
     color: white;
     padding-left: 15px;
@@ -21,7 +22,7 @@ h1 {
 }
 
 #randomtable1 {
-    border: 2px solid black;
+    border: 1px solid black;
     border-collapse: separate;
     border-spacing: 4px;
     background-color: #CCCCCC;
@@ -29,12 +30,14 @@ h1 {
 
 #randomtable1 th,
 #randomtable1 td {
-    border: 2px solid black;
+    border: 1px solid black;
     background-color: #CCCCCC;
 }
 
 #coloredText {
     color: #AE362B;
+    font-style: italic;
+    /* font-weight: bold; */
 }
 
 #zeusLink {
@@ -46,20 +49,7 @@ h3 {
     color: #666666;
 }
 
-
-/* Ways to Add CSS
-There are 3 main ways to use CSS:
-Inline CSS – styles are written directly in an HTML tag (not ideal for larger projects).
-Internal CSS – inside a <style> tag in the HTML file.
-External CSS – in a separate .css file linked to the HTML.
-Preferred method: External CSS.
-
-CSS Selectors: Element, Class, and ID
-Element selector: targets all instances of an element.
-Example: p { color: blue; } (makes all <p> tags blue)
-
-Class selector: reusable across multiple elements.
-Example: .highlight { background-color: yellow; }
-
-ID selector: used for a unique element.
-Example: #header { font-size: 24px; } */
+#googleLogo {
+    margin-right: 10px;
+    background-color: white;
+}
