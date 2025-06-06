@@ -1,0 +1,277 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, sans-serif;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+.header {
+    background-color: #2c3e50;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+}
+
+.header-logo {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-logo::before {
+    content: "🔬";
+    font-size: 20px;
+}
+
+.body-minus-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 52px);
+    padding: 20px;
+}
+
+.container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 32px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.sub-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 32px;
+    gap: 12px;
+}
+
+.sub-header::before {
+    content: "←";
+    font-size: 20px;
+    color: #00bcd4;
+    cursor: pointer;
+}
+
+.sub-header p {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+}
+
+.type-of-school {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 24px;
+}
+
+.type-of-school input[type="radio"] {
+    margin-right: 8px;
+    accent-color: #00bcd4;
+}
+
+.type-of-school label {
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+}
+
+.type-of-school input[type="radio"]:checked + label {
+    color: #00bcd4;
+    font-weight: 500;
+}
+
+.dropdown {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.dropdown > div:first-child {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.dropdown select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    color: #333;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.dropdown select:focus {
+    outline: none;
+    border-color: #00bcd4;
+}
+
+.user-input {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.user-input input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.user-input input:focus {
+    outline: none;
+    border-color: #00bcd4;
+    box-shadow: none;
+}
+
+.user-input .floating-label {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 14px;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: white;
+    padding: 0 4px;
+    z-index: 1;
+}
+
+.user-input input:focus ~ .floating-label,
+.user-input.has-value .floating-label {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+}
+
+.user-input input::placeholder {
+    color: transparent;
+}
+
+.user-input input:focus::placeholder {
+    color: transparent;
+}
+
+.user-input > div:last-child {
+    font-size: 11px;
+    color: #00bcd4;
+    margin-top: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: right;
+}
+
+.user-input > div:last-child:hover {
+    text-decoration: underline;
+}
+
+#password-input {
+    position: relative;
+}
+
+#password-input input {
+    padding-right: 40px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
+    font-size: 16px;
+    z-index: 2;
+    user-select: none;
+}
+
+.remember {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 8px;
+}
+
+.remember input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #00bcd4;
+    cursor: pointer;
+}
+
+.remember span {
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+}
+
+.login-button {
+    margin-bottom: 24px;
+}
+
+.login-button button {
+    width: 100%;
+    padding: 14px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    letter-spacing: 0.5px;
+}
+
+.login-button button:hover {
+    background-color: #45a049;
+}
+
+.login-button button:active {
+    background-color: #3d8b40;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 24px;
+        margin: 10px;
+    }
+
+    .sub-header p {
+        font-size: 16px;
+    }
+
+    .type-of-school {
+        flex-direction: column;
+        gap: 8px;
+    }
+}

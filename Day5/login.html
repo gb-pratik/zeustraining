@@ -1,0 +1,90 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <header class="header">
+            <div class="header-logo">Quantum</div>
+        </header>
+        <div class="body-minus-header">
+            <div class="container">
+                <div class="sub-header">
+                    <p>Log in with Quantum</p>
+                </div>
+
+                <div class="type-of-school">
+                    <label>
+                        <input
+                            type="radio"
+                            name="school-type"
+                            value="district"
+                            checked
+                        />
+                        District
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="school-type"
+                            value="independent-school"
+                        />
+                        Independent school
+                    </label>
+                </div>
+
+                <div class="dropdown" id="state-dropdown">
+                    <div>State*</div>
+                    <select name="state">
+                        <option value="">Alabama</option>
+                        <option value="alaska">Alaska</option>
+                        <option value="arizona">Arizona</option>
+                        <option value="arkansas">Arkansas</option>
+                    </select>
+                </div>
+
+                <div class="dropdown" id="district-dropdown">
+                    <div>District*</div>
+                    <select name="district">
+                        <option value="">Alabama School District</option>
+                        <option value="district1">District 1</option>
+                        <option value="district2">District 2</option>
+                        <option value="district3">District 3</option>
+                    </select>
+                </div>
+
+                <div class="user-input" id="username-input">
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Username/Email ID*"
+                    />
+                    <div class="floating-label">Username/Email ID*</div>
+                    <div>FORGOT USERNAME?</div>
+                </div>
+
+                <div class="user-input" id="password-input">
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password*"
+                    />
+                    <div class="floating-label">Password*</div>
+                    <div class="password-toggle">👁</div>
+                    <div>FORGOT PASSWORD?</div>
+                </div>
+
+                <div class="remember">
+                    <input type="checkbox" id="remember-user" name="remember" />
+                    <span>Remember Me</span>
+                </div>
+
+                <div class="login-button">
+                    <button type="submit">LOG IN</button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
