@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Quantum Dashboard</title>
+        <link rel="stylesheet" href="dash-style.css" />
+    </head>
+    <body>
+        <header class="site-header">
+            <div class="header-content">
+                <img
+                    src="assets/icons/logo-used-in-header.svg"
+                    alt="Quantum Logo"
+                    class="logo"
+                />
+            </div>
+            <div class="header-right-content">
+                <nav class="page-links quicksand-medium">
+                    <a href="#" class="active">DASHBOARD</a>
+                    <a href="#">CONTENT</a>
+                    <a href="#">USERS</a>
+                    <a href="#">REPORTS</a>
+                    <a href="#">ADMIN</a>
+                </nav>
+                <div class="header-icons">
+                    <div class="icon-wrapper">
+                        <img src="assets/icons/alerts.svg" alt="Alerts" />
+                        <div class="badge-count">2</div>
+                    </div>
+                    <div class="icon-wrapper">
+                        <img
+                            src="assets/icons/announcements.svg"
+                            alt="Announcements"
+                        />
+                        <div class="badge-count">1</div>
+                    </div>
+                    <div class="profile-wrapper">
+                        <img
+                            src="https://i.pravatar.cc/40?img=1"
+                            alt="User Profile"
+                            class="profile-pic"
+                        />
+                        <div class="profile-status"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="info-bar">
+                <div class="info-bar-section active">
+                    <img src="assets/icons/courses.svg" alt="courses-icon" />
+                    <span class="quicksand-bold">4</span>
+                    <span class="quicksand-medium">Courses</span>
+                </div>
+                <div class="info-bar-section">
+                    <img src="assets/icons/classes.svg" alt="classes-icon" />
+                    <span class="quicksand-bold">4</span>
+                    <span class="quicksand-medium">Classes</span>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <div class="courses-count quicksand-regular">
+                    Showing 4 of 4 courses
+                </div>
+                <div class="sort-section quicksand-regular">
+                    <label for="sort-select">Sort By:</label>
+                    <div class="select-wrapper">
+                        <select id="sort-select" name="Course">
+                            <option value="course-name">Course Name</option>
+                            <option value="date">Date</option>
+                        </select>
+                    </div>
+                    <img
+                        class="sort-icon"
+                        src="assets/icons/sort.svg"
+                        alt="Sort order"
+                    />
+                </div>
+            </div>
+
+            <div class="course-grid">
+                <!-- Card 1: Acceleration -->
+                <div class="course-card">
+                    <div class="card-data">
+                        <img
+                            class="course-thumbnail"
+                            src="assets/images/imageMask-1.png"
+                            alt="Acceleration course thumbnail"
+                        />
+                        <div class="card-text">
+                            <div class="course-header">
+                                <h3 class="quicksand-bold">Acceleration</h3>
+                                <img
+                                    class="favorite-icon"
+                                    src="assets/icons/favourite.svg"
+                                    alt="Favorite"
+                                />
+                            </div>
+                            <div class="course-subject quicksand-regular">
+                                <span>Physics</span>
+                                <span class="separator">|</span>
+                                <span
+                                    >Grade 7
+                                    <span class="grade-plus">+2</span></span
+                                >
+                            </div>
+                            <div class="course-content-info quicksand-regular">
+                                <span><strong>4</strong> Units</span>
+                                <span><strong>18</strong> Lessons</span>
+                                <span><strong>24</strong> Topics</span>
+                            </div>
+                            <div class="course-teacher-select">
+                                <select name="teacher">
+                                    <option>Mr. Frank's Class B</option>
+                                </select>
+                            </div>
+                            <div class="enrollment-duration quicksand-regular">
+                                <span>50 Students</span>
+                                <span class="separator-light">|</span>
+                                <span>21-Jan-2020 - 21-Aug-2020</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="horizontal-separator"></div>
+                    <div class="card-actions">
+                        <img src="assets/icons/preview.svg" alt="Preview" />
+                        <img
+                            src="assets/icons/manage course.svg"
+                            alt="Manage Course"
+                        />
+                        <img
+                            src="assets/icons/grade submissions.svg"
+                            alt="Grade Submissions"
+                        />
+                        <img src="assets/icons/reports.svg" alt="Reports" />
+                    </div>
+                </div>
+
+                <!-- Card 2: Displacement, Velocity and Speed -->
+                <div class="course-card">
+                    <div class="card-data">
+                        <img
+                            class="course-thumbnail"
+                            src="assets/images/imageMask-2.png"
+                            alt="Physics course thumbnail"
+                        />
+                        <div class="card-text">
+                            <div class="course-header">
+                                <h3 class="quicksand-bold">
+                                    Displacement, Velocity and Speed
+                                </h3>
+                                <img
+                                    class="favorite-icon"
+                                    src="assets/icons/favourite.svg"
+                                    alt="Favorite"
+                                />
+                            </div>
+                            <div class="course-subject quicksand-regular">
+                                <span>Physics 2</span>
+                                <span class="separator">|</span>
+                                <span
+                                    >Grade 6
+                                    <span class="grade-plus">+3</span></span
+                                >
+                            </div>
+                            <div class="course-content-info quicksand-regular">
+                                <span><strong>2</strong> Units</span>
+                                <span><strong>15</strong> Lessons</span>
+                                <span><strong>20</strong> Topics</span>
+                            </div>
+                            <div class="course-teacher-select">
+                                <select name="teacher" disabled>
+                                    <option>No Classes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="horizontal-separator"></div>
+                    <div class="card-actions">
+                        <img src="assets/icons/preview.svg" alt="Preview" />
+                        <img
+                            src="assets/icons/manage course.svg"
+                            alt="Manage Course"
+                        />
+                        <img
+                            src="assets/icons/grade submissions.svg"
+                            alt="Grade Submissions"
+                        />
+                        <img src="assets/icons/reports.svg" alt="Reports" />
+                    </div>
+                </div>
+
+                <!-- Card 3: Introduction to Biology -->
+                <div class="course-card">
+                    <div class="card-data">
+                        <img
+                            class="course-thumbnail"
+                            src="assets/images/imageMask-3.png"
+                            alt="Biology course thumbnail"
+                        />
+                        <div class="card-text">
+                            <div class="course-header">
+                                <h3 class="quicksand-bold">
+                                    Introduction to Biology: Micro organisms and
+                                    how they affec...
+                                </h3>
+                                <img
+                                    class="favorite-icon"
+                                    src="assets/icons/favourite.svg"
+                                    alt="Favorite"
+                                />
+                            </div>
+                            <div class="course-subject quicksand-regular">
+                                <span>Biology</span>
+                                <span class="separator">|</span>
+                                <span
+                                    >Grade 4
+                                    <span class="grade-plus">+1</span></span
+                                >
+                            </div>
+                            <div class="course-content-info quicksand-regular">
+                                <span><strong>5</strong> Units</span>
+                                <span><strong>16</strong> Lessons</span>
+                                <span><strong>22</strong> Topics</span>
+                            </div>
+                            <div class="course-teacher-select">
+                                <select name="teacher">
+                                    <option>All Classes</option>
+                                </select>
+                            </div>
+                            <div class="enrollment-duration quicksand-regular">
+                                <span>300 Students</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="horizontal-separator"></div>
+                    <div class="card-actions">
+                        <img src="assets/icons/preview.svg" alt="Preview" />
+                        <img
+                            src="assets/icons/manage course.svg"
+                            alt="Manage Course"
+                        />
+                        <img
+                            src="assets/icons/grade submissions.svg"
+                            alt="Grade Submissions"
+                        />
+                        <img src="assets/icons/reports.svg" alt="Reports" />
+                    </div>
+                </div>
+
+                <!-- Card 4: Introduction to High School Mathematics -->
+                <div class="course-card">
+                    <div class="expired-tag quicksand-semibold">EXPIRED</div>
+                    <div class="card-data">
+                        <img
+                            class="course-thumbnail"
+                            src="assets/images/imageMask.png"
+                            alt="Mathematics course thumbnail"
+                        />
+                        <div class="card-text">
+                            <div class="course-header">
+                                <h3 class="quicksand-bold">
+                                    Introduction to High School Mathematics
+                                </h3>
+                                <img
+                                    class="favorite-icon unfavorited"
+                                    src="assets/icons/favourite.svg"
+                                    alt="Not favorited"
+                                />
+                            </div>
+                            <div class="course-subject quicksand-regular">
+                                <span>Mathematics</span>
+                                <span class="separator">|</span>
+                                <span
+                                    >Grade 8
+                                    <span class="grade-plus">+3</span></span
+                                >
+                            </div>
+                            <div class="course-teacher-select">
+                                <select name="teacher">
+                                    <option>Mr. Frank's Class A</option>
+                                </select>
+                            </div>
+                            <div class="enrollment-duration quicksand-regular">
+                                <span>44 Students</span>
+                                <span class="separator-light">|</span>
+                                <span>14-Oct-2019 - 20-Oct-2020</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="horizontal-separator"></div>
+                    <div class="card-actions">
+                        <img src="assets/icons/preview.svg" alt="Preview" />
+                        <img
+                            src="assets/icons/manage course.svg"
+                            alt="Manage Course"
+                        />
+                        <img
+                            src="assets/icons/grade submissions.svg"
+                            alt="Grade Submissions"
+                        />
+                        <img src="assets/icons/reports.svg" alt="Reports" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <a href="#">About</a>
+                <span class="separator">|</span>
+                <a href="#">Contact Us</a>
+            </div>
+        </main>
+
+        <footer class="site-footer-bottom">
+            <img
+                src="assets/icons/logo-used-in-footer.svg"
+                alt="Quantum Logo"
+                class="footer-logo"
+            />
+            <span class="separator">|</span>
+            <span class="copyright quicksand-regular">
+                Copyright © 2020-2021
+                <span class="quicksand-bold">Zeus Systems Pvt. Ltd.</span> All
+                rights reserved.
+            </span>
+        </footer>
+    </body>
+</html>

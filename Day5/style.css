@@ -120,6 +120,9 @@ body {
 
 /* Header */
 .site-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    justify-content: space-between;
     background-color: var(--header-bg);
     padding: 11px 29px;
     width: 100%;
@@ -138,6 +141,17 @@ body {
 .site-header .logo {
     height: 32px;
     margin-right: 10px;
+}
+.header-right-content {
+    display: flex;
+}
+.page-links {
+    display: flex;
+    justify-content: space-around;
+}
+.header-icons {
+    display: flex;
+    justify-content: space-around;
 }
 
 /* Main Content Area */
