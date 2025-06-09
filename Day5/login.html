@@ -1,90 +1,146 @@
+<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
+        <title>Log in with Quantum</title>
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <header class="header">
-            <div class="header-logo">Quantum</div>
+        <header class="site-header">
+            <div class="header-content">
+                <img
+                    src="assets\icons\logo-used-in-header.svg"
+                    alt="Quantum Logo"
+                    class="logo"
+                />
+            </div>
         </header>
-        <div class="body-minus-header">
-            <div class="container">
-                <div class="sub-header">
-                    <p>Log in with Quantum</p>
+
+        <main class="main-content">
+            <div class="login-container">
+                <div class="login-header">
+                    <img
+                        src="assets/icons/back.svg"
+                        alt="Back"
+                        class="back-arrow"
+                    />
+                    <h1>Log in with Quantum</h1>
                 </div>
 
-                <div class="type-of-school">
-                    <label>
+                <form class="login-form">
+                    <div class="form-section radio-button-section">
+                        <div class="radio-option quicksand-semibold">
+                            <input
+                                type="radio"
+                                id="login-type-district"
+                                name="login_type"
+                                value="district"
+                                checked
+                            />
+                            <label for="login-type-district">District</label>
+                        </div>
+                        <div class="radio-option quicksand-semibold">
+                            <input
+                                type="radio"
+                                id="login-type-independent"
+                                name="login_type"
+                                value="independent"
+                            />
+                            <label for="login-type-independent"
+                                >Independent school</label
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="state-select" class="static-label"
+                            >State*</label
+                        >
+                        <select id="state-select" name="state">
+                            <option value="alabama">Alabama</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="district-select" class="static-label"
+                            >District*</label
+                        >
+                        <select id="district-select" name="district">
+                            <option value="alabama-school-district">
+                                Alabama School District
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group floating-label">
                         <input
-                            type="radio"
-                            name="school-type"
-                            value="district"
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder=" "
+                            required
+                        />
+                        <label for="username">Username/Email ID*</label>
+                    </div>
+                    <a href="#" class="forgot-link username-forgot-link"
+                        >FORGOT USERNAME?</a
+                    >
+
+                    <div class="form-group floating-label password-field-group">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder=" "
+                            required
+                        />
+                        <label for="password">Password*</label>
+                        <img
+                            src="assets\icons\preview.svg"
+                            alt="Toggle visibility"
+                            class="eye-icon"
+                        />
+                    </div>
+                    <a href="#" class="forgot-link password-forgot-link"
+                        >FORGOT PASSWORD?</a
+                    >
+
+                    <div class="form-group remember-me-section">
+                        <input
+                            type="checkbox"
+                            id="remember-me"
+                            name="remember"
                             checked
                         />
-                        District
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            name="school-type"
-                            value="independent-school"
-                        />
-                        Independent school
-                    </label>
-                </div>
+                        <label for="remember-me">Remember Me</label>
+                    </div>
 
-                <div class="dropdown" id="state-dropdown">
-                    <div>State*</div>
-                    <select name="state">
-                        <option value="">Alabama</option>
-                        <option value="alaska">Alaska</option>
-                        <option value="arizona">Arizona</option>
-                        <option value="arkansas">Arkansas</option>
-                    </select>
-                </div>
-
-                <div class="dropdown" id="district-dropdown">
-                    <div>District*</div>
-                    <select name="district">
-                        <option value="">Alabama School District</option>
-                        <option value="district1">District 1</option>
-                        <option value="district2">District 2</option>
-                        <option value="district3">District 3</option>
-                    </select>
-                </div>
-
-                <div class="user-input" id="username-input">
-                    <input
-                        type="text"
-                        name="username"
-                        placeholder="Username/Email ID*"
-                    />
-                    <div class="floating-label">Username/Email ID*</div>
-                    <div>FORGOT USERNAME?</div>
-                </div>
-
-                <div class="user-input" id="password-input">
-                    <input
-                        type="password"
-                        name="password"
-                        placeholder="Password*"
-                    />
-                    <div class="floating-label">Password*</div>
-                    <div class="password-toggle">👁</div>
-                    <div>FORGOT PASSWORD?</div>
-                </div>
-
-                <div class="remember">
-                    <input type="checkbox" id="remember-user" name="remember" />
-                    <span>Remember Me</span>
-                </div>
-
-                <div class="login-button">
-                    <button type="submit">LOG IN</button>
-                </div>
+                    <button type="submit" class="login-button">LOG IN</button>
+                </form>
             </div>
-        </div>
+
+            <div class="page-links">
+                <a href="#">About</a>
+                <span class="link-separator">|</span>
+                <a href="#">Contact Us</a>
+            </div>
+        </main>
+
+        <footer class="site-footer-bottom">
+            <img
+                src="assets\icons\logo used in footer.svg"
+                alt="Quantum Logo"
+                class="footer-logo"
+            />
+            <span class="link-separator">|</span>
+            <span>
+                Copyright © 2020-2021
+                <span style="font-weight: 600; color: #616161"
+                    >Zeus Systems Pvt. Ltd.</span
+                >
+                All rights reserved.</span
+            >
+        </footer>
     </body>
 </html>
