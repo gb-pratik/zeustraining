@@ -276,7 +276,7 @@ body {
     gap: 8px;
 }
 .grade-plus {
-    color: var(--primary-green-dark);
+    color: #1f7a54;
     font-weight: 600;
 }
 .separator {
@@ -390,7 +390,7 @@ select:disabled {
 }
 
 @media (max-width: 768px) {
-    .header-icons {
+    .page-links {
         display: none; /* Hide all header icons */
     }
 
