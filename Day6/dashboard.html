@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Quantum Dashboard</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <header class="site-header">
+            <div class="header-content">
+                <img
+                    src="assets/icons/logo-used-in-header.svg"
+                    alt="Quantum Logo"
+                    class="logo"
+                />
+            </div>
+            <div class="header-right-content">
+                <nav class="page-links quicksand-medium">
+                    <a href="#" class="active">DASHBOARD</a>
+                    <a href="#">CONTENT</a>
+                    <a href="#">USERS</a>
+                    <a href="#">REPORTS</a>
+                    <a href="#">ADMIN</a>
+                </nav>
+                <div class="header-icons">
+                    <!-- Alerts Container -->
+                    <div class="header-popup-container">
+                        <div class="icon-wrapper" id="alerts-trigger">
+                            <img src="assets/icons/alerts.svg" alt="Alerts" />
+                            <div class="badge-count">1</div>
+                        </div>
+                        <!-- ALERTS POPUP MOVED HERE -->
+                        <div class="popup-menu" id="alerts-popup">
+                            <div class="popup-arrow" style="right: 15px"></div>
+                            <div class="popup-list">
+                                <div class="message yellowed-item">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-main-text">
+                                                License for Introduction to
+                                                Algebra has been assigned to
+                                                your school
+                                            </p>
+                                        </div>
+                                        <img
+                                            src="assets/icons/dnd.svg"
+                                            alt="Dismiss"
+                                        />
+                                    </div>
+                                    <p class="popup-timestamp">
+                                        15-Sep-2018 at 07:21 pm
+                                    </p>
+                                </div>
+                                <div class="message">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-main-text">
+                                                Lesson 3 Practice Worksheet
+                                                overdue for Amy Santiago
+                                            </p>
+                                            <p class="popup-sub-text">
+                                                Course: Advanced Mathematics
+                                            </p>
+                                        </div>
+                                        <img
+                                            src="assets/icons/tick-mark.svg"
+                                            alt="Completed"
+                                            class="circle-checkbox-image"
+                                        />
+                                    </div>
+                                    <p class="popup-timestamp">
+                                        15-Sep-2018 at 05:21 pm
+                                    </p>
+                                </div>
+                                <!-- ... other alerts ... -->
+                                <div class="message yellowed-item">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-main-text">
+                                                23 new students created
+                                            </p>
+                                            <p class="popup-sub-text"></p>
+                                        </div>
+                                        <img
+                                            src="assets/icons/dnd.svg"
+                                            alt="Dismiss"
+                                        />
+                                    </div>
+                                    <p class="popup-timestamp">
+                                        14-Sep-2018 at 01:21 pm
+                                    </p>
+                                </div>
+                                <div class="message yellowed-item">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-main-text">
+                                                15 submissions ready for
+                                                evaluation
+                                            </p>
+                                            <p class="popup-sub-text">
+                                                Class: Basics of Algebra
+                                            </p>
+                                        </div>
+                                        <img
+                                            src="assets/icons/dnd.svg"
+                                            alt="Dismiss"
+                                        />
+                                    </div>
+                                    <p class="popup-timestamp">
+                                        13-Sep-2018 at 01:15 pm
+                                    </p>
+                                </div>
+                                <div class="message yellowed-item">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-main-text">
+                                                License for Basic Concepts in
+                                                Geometry has been assigned to
+                                                your...
+                                            </p>
+                                            <p class="popup-sub-text"></p>
+                                        </div>
+                                        <img
+                                            src="assets/icons/dnd.svg"
+                                            alt="Dismiss"
+                                        />
+                                    </div>
+                                    <p class="popup-timestamp">
+                                        15-Sep-2018 at 07:21 pm
+                                    </p>
+                                </div>
+                                <div class="message yellowed-item">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-main-text">
+                                                Lesson 3 Practice Worksheet
+                                                overdue for Sam Diego
+                                            </p>
+                                            <p class="popup-sub-text">
+                                                Course: Advanced Mathematics
+                                            </p>
+                                        </div>
+                                        <img
+                                            src="assets\icons\tick-mark.svg"
+                                            alt="Completed"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="popup-footer">
+                                <a href="#" class="popup-button">SHOW ALL</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Announcements Container -->
+                    <div class="header-popup-container">
+                        <div class="icon-wrapper" id="announcements-trigger">
+                            <img
+                                src="assets/icons/announcements.svg"
+                                alt="Announcements"
+                            />
+                            <div class="badge-count">2</div>
+                        </div>
+                        <!-- ANNOUNCEMENTS POPUP MOVED HERE -->
+                        <div class="popup-menu" id="announcements-popup">
+                            <div class="popup-arrow" style="right: 15px"></div>
+                            <div class="popup-list">
+                                <div class="message">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-sub-text">
+                                                PA: Wilson Kumar
+                                            </p>
+                                            <p class="popup-main-text">
+                                                No classes will be held on 21st
+                                                Nov
+                                            </p>
+                                        </div>
+                                        <img
+                                            src="assets/icons/tick-mark.svg"
+                                            alt="Read"
+                                        />
+                                    </div>
+                                    <div class="attachments">
+                                        <div class="attachments-left">
+                                            <img
+                                                src="assets/icons/file-attachment.svg"
+                                                alt="attachment"
+                                            />
+                                            <p class="popup-sub-text">
+                                                2 files are attached
+                                            </p>
+                                        </div>
+                                        <div class="attachments-right">
+                                            <p class="popup-timestamp">
+                                                15-Sep-2018 at 07:21 pm
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="message yellowed-item">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-sub-text">
+                                                PA: Samson White
+                                            </p>
+                                            <p class="popup-main-text">
+                                                Guest lecture on Geometry on
+                                                20th September
+                                            </p>
+                                        </div>
+                                        <img
+                                            src="assets/icons/dnd.svg"
+                                            alt="Dismiss"
+                                        />
+                                    </div>
+                                    <p class="popup-timestamp">
+                                        15-Sep-2018 at 07:21 pm
+                                    </p>
+                                </div>
+                                <!-- ... other announcements ... -->
+                                <div class="message">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-sub-text">
+                                                PA: Wilson Kumar
+                                            </p>
+                                            <p class="popup-main-text">
+                                                Additional course materials
+                                                available on request
+                                            </p>
+                                            <p class="popup-sub-text">
+                                                Course: Mathematics 101
+                                            </p>
+                                        </div>
+                                        <img
+                                            src="assets\icons\tick-mark.svg"
+                                            alt="Read"
+                                        />
+                                    </div>
+                                    <p class="popup-timestamp">
+                                        15-Sep-2018 at 07:21 pm
+                                    </p>
+                                </div>
+                                <div class="message yellowed-item">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-sub-text">
+                                                PA: Wilson Kumar
+                                            </p>
+                                            <p class="popup-main-text">
+                                                No classes will be held on 25th
+                                                Dec
+                                            </p>
+                                        </div>
+                                        <img
+                                            src="assets/icons/dnd.svg"
+                                            alt="Dismiss"
+                                        />
+                                    </div>
+                                    <p class="popup-timestamp">
+                                        15-Sep-2018 at 07:21 pm
+                                    </p>
+                                </div>
+                                <div class="message yellowed-item">
+                                    <div class="popup-item">
+                                        <div class="popup-item-content">
+                                            <p class="popup-sub-text">
+                                                PA: Wilson Kumar
+                                            </p>
+                                            <p class="popup-main-text">
+                                                Additional course materials
+                                                available on request
+                                            </p>
+                                            <p class="popup-sub-text">
+                                                Course: Mathematics 101
+                                            </p>
+                                        </div>
+                                        <img
+                                            src="assets/icons/dnd.svg"
+                                            alt="Dismiss"
+                                        />
+                                    </div>
+                                    <p class="popup-timestamp">
+                                        15-Sep-2018 at 07:21 pm
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="popup-footer dual-button">
+                                <a href="#" class="popup-button">SHOW ALL</a>
+                                <a href="#" class="popup-button create-new"
+                                    >CREATE NEW</a
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-wrapper">
+                        <img
+                            src="assets/icons/account_circle.svg"
+                            alt="User Profile"
+                            class="profile-pic"
+                        />
+                    </div>
+                </div>
+
+                <!-- Hamburger Container -->
+                <div class="header-popup-container">
+                    <div class="hamburger-menu" id="hamburger-trigger"></div>
+                    <!-- NAV POPUP MOVED HERE and RESTRUCTURED -->
+                    <div class="popup-menu" id="nav-popup">
+                        <div class="popup-arrow" style="right: 12px"></div>
+                        <div class="popup-list nav-list">
+                            <div class="nav-item-container">
+                                <div class="popup-item nav-item">
+                                    <p class="popup-main-text">DASHBOARD</p>
+                                </div>
+                            </div>
+                            <!-- CONTENT Submenu Container -->
+                            <div class="nav-item-container">
+                                <div class="popup-item nav-item">
+                                    <p class="popup-main-text">CONTENT</p>
+                                    <img
+                                        src="assets/icons/arrow-down-1.svg"
+                                        alt="Expand"
+                                    />
+                                </div>
+                                <div class="nav-submenu-container">
+                                    <div class="popup-item nav-sub-item">
+                                        <p class="popup-main-text">
+                                            COURSE CATALOG
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Other Nav Items -->
+                            <div class="nav-item-container">
+                                <div class="popup-item nav-item">
+                                    <p class="popup-main-text">USERS</p>
+                                    <img
+                                        src="assets/icons/arrow-down-1.svg"
+                                        alt="Expand"
+                                    />
+                                </div>
+                            </div>
+                            <div class="nav-item-container">
+                                <div class="popup-item nav-item">
+                                    <p class="popup-main-text">REPORTS</p>
+                                    <img
+                                        src="assets/icons/arrow-down-1.svg"
+                                        alt="Expand"
+                                    />
+                                </div>
+                            </div>
+                            <div class="nav-item-container">
+                                <div class="popup-item nav-item">
+                                    <p class="popup-main-text">ADMIN</p>
+                                    <img
+                                        src="assets/icons/arrow-down-1.svg"
+                                        alt="Expand"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content and footer remain unchanged -->
+        <main class="main-content">
+            <div class="info-bar">
+                <div class="info-bar-section active">
+                    <img src="assets/icons/courses.svg" alt="courses-icon" />
+                    <span class="quicksand-bold" style="font-size: 24px"
+                        >4</span
+                    >
+                    <span class="quicksand-medium">Courses</span>
+                </div>
+                <div class="info-bar-section">
+                    <img src="assets/icons/classes.svg" alt="classes-icon" />
+                    <span class="quicksand-bold" style="font-size: 24px"
+                        >4</span
+                    >
+                    <span class="quicksand-medium">Classes</span>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <div class="courses-count quicksand-regular">
+                    Showing 4 of 4 courses
+                </div>
+                <div class="sort-section quicksand-regular">
+                    <label for="sort-select">Sort By:</label>
+                    <div class="select-wrapper">
+                        <select id="sort-select" name="Course">
+                            <option value="course-name quicksand-medium">
+                                Course Name
+                            </option>
+                            <option value="date">Date</option>
+                        </select>
+                    </div>
+                    <img
+                        class="sort-icon"
+                        src="assets/icons/sort.svg"
+                        alt="Sort order"
+                    />
+                </div>
+            </div>
+
+            <div class="course-grid"></div>
+
+            <div class="footer-links">
+                <a href="#">About</a>
+                <span class="separator">|</span>
+                <a href="#">Contact Us</a>
+            </div>
+        </main>
+
+        <footer class="site-footer-bottom">
+            <img
+                src="assets/icons/logo-used-in-footer.svg"
+                alt="Quantum Logo"
+                class="footer-logo"
+            />
+            <span class="separator">|</span>
+            <span class="copyright quicksand-regular">
+                Copyright © 2020-2021
+                <span class="quicksand-bold">Zeus Systems Pvt. Ltd.</span> All
+                rights reserved.
+            </span>
+        </footer>
+
+        <script src="index.js" defer></script>
+        <script src="main.js" defer></script>
+    </body>
+</html>
