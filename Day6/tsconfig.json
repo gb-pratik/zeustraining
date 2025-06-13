@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "es5", // Compile to ES5 for broad browser compatibility
+        "module": "commonjs", // A common module system
+        "strict": true, // Enables all strict type-checking options
+        "outDir": "./dist" // Put compiled JS files in a 'dist' folder
+    },
+    "include": [
+        "index.ts" // Tell compiler where your TS files are
+    ]
+}

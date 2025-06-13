@@ -1,3 +1,4 @@
+"use strict";
 document.addEventListener("DOMContentLoaded", function () {
     var popupContainers = document.querySelectorAll(".header-popup-container");
     popupContainers.forEach(function (container) {
