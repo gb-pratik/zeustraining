@@ -605,6 +605,10 @@ body {
   color: #222222;
 }
 
+.hide {
+  visibility: hidden;
+}
+
 #alerts-popup,
 #announcements-popup {
   width: 315px;

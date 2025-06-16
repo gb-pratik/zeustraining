@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     popupContainers.forEach((container) => {
         const popup = container.querySelector<HTMLElement>(".popup-menu");
-
+        const badge = container.querySelector<HTMLElement>(".badge-count");
         if (popup) {
             container.addEventListener("mouseover", () => {
                 popup.classList.add("show");
@@ -13,6 +13,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             container.addEventListener("mouseout", () => {
                 popup.classList.remove("show");
+            });
+        }
+        if (badge) {
+            container.addEventListener("mouseover", () => {
+                badge.classList.add("hide");
+            });
+
+            container.addEventListener("mouseout", () => {
+                badge.classList.remove("hide");
             });
         }
     });

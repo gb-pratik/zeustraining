@@ -658,6 +658,10 @@ body {
     color: $text-dark;
 }
 
+.hide {
+    visibility: hidden;
+}
+
 #alerts-popup,
 #announcements-popup {
     width: 315px;
