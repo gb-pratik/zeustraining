@@ -1,0 +1,27 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.background-container {
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+    position: relative;
+}
+
+.draggable-box {
+    width: 50px;
+    height: 50px;
+    background-color: #e74c3c;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    cursor: grab;
+
+    touch-action: none;
+}
