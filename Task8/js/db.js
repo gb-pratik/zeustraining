@@ -1,17 +1,12 @@
-// Use code with caution.
 const DB_NAME = "GridDB";
 const DB_VERSION = 1;
 const CELL_STORE = "cells";
 const COL_WIDTH_STORE = "colWidths";
 const ROW_HEIGHT_STORE = "rowHeights";
 
-/** @type {IDBDatabase} Stores the database connection */
 let db;
 
-/**
- * Initializes the IndexedDB database and creates object stores if they don't exist.
- * @returns {Promise<void>} A promise that resolves when the DB is ready.
- */
+// Initializes the IndexedDB database and creates object stores if they don't exist.
 function initDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -42,12 +37,7 @@ function initDB() {
     });
 }
 
-/**
- * Sets a value in a given object store.
- * @param {string} storeName - The name of the object store.
- * @param {object} data - The data to store. It must have an 'id' property.
- * @returns {Promise<void>}
- */
+// Sets or updates data in a specified object store.
 function setData(storeName, data) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction([storeName], "readwrite");
@@ -62,12 +52,7 @@ function setData(storeName, data) {
     });
 }
 
-/**
- * Gets a value from a given object store by its ID.
- * @param {string} storeName - The name of the object store.
- * @param {string|number} id - The ID of the item to retrieve.
- * @returns {Promise<object|undefined>} The retrieved data or undefined if not found.
- */
+// Retrieves a single data entry from a specified object store by its ID.
 function getData(storeName, id) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction([storeName], "readonly");
@@ -82,11 +67,7 @@ function getData(storeName, id) {
     });
 }
 
-/**
- * Gets all data from a store. Used to load initial column/row sizes.
- * @param {string} storeName - The name of the object store.
- * @returns {Promise<object[]>} An array of all objects in the store.
- */
+// Retrieves all data from a specified object store.
 function getAllData(storeName) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction([storeName], "readonly");

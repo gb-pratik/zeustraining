@@ -1,4 +1,5 @@
 export class StatusBar {
+    // Initializes the StatusBar by getting references to the DOM elements.
     constructor() {
         this.avgEl = document.getElementById("stat-avg");
         this.countEl = document.getElementById("stat-count");
@@ -7,6 +8,7 @@ export class StatusBar {
         this.sumEl = document.getElementById("stat-sum");
     }
 
+    // Clears all the statistical data from the status bar.
     clear() {
         this.avgEl.textContent = "0";
         this.countEl.textContent = "0";
@@ -15,6 +17,7 @@ export class StatusBar {
         this.sumEl.textContent = "0";
     }
 
+    // Updates the status bar with calculations based on the provided cell values.
     update(cellValues) {
         const numbers = cellValues
             .map((v) => parseFloat(v))

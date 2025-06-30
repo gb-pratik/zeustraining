@@ -1,6 +1,7 @@
 import * as db from "./db.js";
 
 export class RowManager {
+    // Initializes the RowManager with settings for total rows and default height.
     constructor(options) {
         this.totalRows = options.totalRows;
         this.defaultHeight = options.defaultHeight;
@@ -8,6 +9,7 @@ export class RowManager {
         this.positionCache = new Map();
     }
 
+    // Loads custom row heights from the database.
     async loadHeights() {
         const heights = await db.getAllData(db.ROW_HEIGHT_STORE);
         heights.forEach((item) => {
@@ -16,16 +18,19 @@ export class RowManager {
         this.positionCache.clear();
     }
 
+    // Gets the height of a specific row, using custom height if available, otherwise default.
     getHeight(rowIndex) {
         return this.customHeights.get(rowIndex) || this.defaultHeight;
     }
 
+    // Sets the height of a row and saves it to the database.
     async setHeight(rowIndex, height) {
         this.customHeights.set(rowIndex, height);
         this.positionCache.clear();
         await db.setData(db.ROW_HEIGHT_STORE, { id: rowIndex, height: height });
     }
 
+    // Calculates the vertical position of a row, using a cache for performance.
     getPosition(rowIndex, headerHeight) {
         if (this.positionCache.has(rowIndex)) {
             return this.positionCache.get(rowIndex);
@@ -43,6 +48,8 @@ export class RowManager {
         return y;
     }
 
+    // Determines the row index at a given vertical position.
+    // This is important for hit-testing, like figuring out which row was clicked.
     getRowIndexAt(y, headerHeight) {
         if (y < headerHeight) return -1;
 

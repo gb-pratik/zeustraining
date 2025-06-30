@@ -61,8 +61,8 @@ export class SelectionManager {
         const { rowManager, columnManager, options, canvas } = this.grid;
         const { headerHeight, headerWidth } = options;
 
-        ctx.fillStyle = "rgba(0, 123, 255, 0.2)";
-        ctx.strokeStyle = "rgba(0, 123, 255, 1)";
+        ctx.fillStyle = "rgba(19, 126, 67,0.06)";
+        ctx.strokeStyle = "rgba(19, 126, 67,1)";
         ctx.lineWidth = 2;
 
         let x, y, w, h;
@@ -111,7 +111,27 @@ export class SelectionManager {
                 return;
         }
 
-        ctx.fillRect(x, y, w, h);
-        ctx.strokeRect(x, y, w, h);
+        // ctx.fillRect(x, y, w, h);
+        // ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = "rgba(19, 126, 67,0.2)";
+        ctx.fillRect(x, 0, w, headerHeight);
+        ctx.fillRect(0, y, headerWidth, h);
+        ctx.fillStyle = "rgb(0, 0, 0)";
+
+        ctx.strokeRect(x, headerHeight, w, 0);
+        ctx.strokeRect(headerWidth, y, 0, h);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + w, y);
+        ctx.moveTo(x + w, y - 1);
+        ctx.lineTo(x + w, y + h - 4);
+        ctx.moveTo(x + w - 4, y + h);
+        ctx.lineTo(x, y + h);
+        ctx.moveTo(x, y + h + 1);
+        ctx.lineTo(x, y - 1);
+        ctx.stroke();
+
+        ctx.fillStyle = "rgb(16,124,65)";
+        ctx.fillRect(x + w - 2.8, y + h - 2.8, 4.2, 4.2);
     }
 }
