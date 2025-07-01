@@ -8,15 +8,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Initialize the database before doing anything else.
         await initDB();
 
-        const canvas = document.getElementById("grid-canvas");
-        if (!canvas) {
-            return;
-        }
+        // The container element where the grid will be mounted.
+        const appContainer = document.body;
 
-        // Create a new grid instance.
-        const grid = new Grid(canvas, {});
+        const grid = new Grid(appContainer, {});
 
-        // Asynchronously initialize the grid's data.
         await grid.init();
 
         // Set up global keyboard shortcuts for undo and redo.
@@ -33,5 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 grid.commandManager.redo();
             }
         });
-    } catch (error) {}
+    } catch (error) {
+        console.error("Failed to initialize the application:", error);
+    }
 });

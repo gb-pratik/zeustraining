@@ -7,6 +7,7 @@ export class RowManager {
         this.defaultHeight = options.defaultHeight;
         this.customHeights = new Map();
         this.positionCache = new Map();
+        this.sortedCustomHeights = null;
     }
 
     // Loads custom row heights from the database.
@@ -16,6 +17,7 @@ export class RowManager {
             this.customHeights.set(item.id, item.height);
         });
         this.positionCache.clear();
+        this.sortedCustomHeights = null;
     }
 
     // Gets the height of a specific row, using custom height if available, otherwise default.
@@ -27,7 +29,17 @@ export class RowManager {
     async setHeight(rowIndex, height) {
         this.customHeights.set(rowIndex, height);
         this.positionCache.clear();
+        this.sortedCustomHeights = null;
         await db.setData(db.ROW_HEIGHT_STORE, { id: rowIndex, height: height });
+    }
+
+    // Helper to ensure custom heights are sorted by index for efficient iteration.
+    _ensureSortedHeights() {
+        if (this.sortedCustomHeights === null) {
+            this.sortedCustomHeights = [...this.customHeights.entries()].sort(
+                (a, b) => a[0] - b[0]
+            );
+        }
     }
 
     // Calculates the vertical position of a row, using a cache for performance.
@@ -38,9 +50,13 @@ export class RowManager {
 
         let y = headerHeight + rowIndex * this.defaultHeight;
 
-        for (const [index, height] of this.customHeights.entries()) {
+        this._ensureSortedHeights();
+        for (const [index, height] of this.sortedCustomHeights) {
             if (index < rowIndex) {
                 y += height - this.defaultHeight;
+            } else {
+                // Since the list is sorted, we can stop iterating early.
+                break;
             }
         }
 
@@ -49,7 +65,6 @@ export class RowManager {
     }
 
     // Determines the row index at a given vertical position.
-    // This is important for hit-testing, like figuring out which row was clicked.
     getRowIndexAt(y, headerHeight) {
         if (y < headerHeight) return -1;
 
@@ -61,12 +76,8 @@ export class RowManager {
             Math.min(estimatedIndex, this.totalRows - 1)
         );
 
-        let estimatedPos = estimatedIndex * this.defaultHeight;
-        for (const [index, height] of this.customHeights.entries()) {
-            if (index < estimatedIndex) {
-                estimatedPos += height - this.defaultHeight;
-            }
-        }
+        let estimatedPos =
+            this.getPosition(estimatedIndex, headerHeight) - headerHeight;
 
         if (estimatedPos > contentY) {
             while (estimatedPos > contentY && estimatedIndex > 0) {

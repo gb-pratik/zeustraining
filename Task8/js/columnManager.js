@@ -7,7 +7,7 @@ export class ColumnManager {
         this.defaultWidth = options.defaultWidth;
         this.customWidths = new Map();
         this.positionCache = new Map();
-        // this.maxcolIndex = 0;
+        this.sortedCustomWidths = null;
     }
 
     // Loads custom column widths from the database.
@@ -17,6 +17,7 @@ export class ColumnManager {
             this.customWidths.set(item.id, item.width);
         });
         this.positionCache.clear();
+        this.sortedCustomWidths = null;
     }
 
     // Gets the width of a specific column, using custom width if available, otherwise default.
@@ -28,7 +29,17 @@ export class ColumnManager {
     async setWidth(colIndex, width) {
         this.customWidths.set(colIndex, width);
         this.positionCache.clear();
+        this.sortedCustomWidths = null;
         await db.setData(db.COL_WIDTH_STORE, { id: colIndex, width: width });
+    }
+
+    // Helper to ensure custom widths are sorted by index for efficient iteration.
+    _ensureSortedWidths() {
+        if (this.sortedCustomWidths === null) {
+            this.sortedCustomWidths = [...this.customWidths.entries()].sort(
+                (a, b) => a[0] - b[0]
+            );
+        }
     }
 
     // Calculates the horizontal position of a column, using a cache for performance.
@@ -39,9 +50,13 @@ export class ColumnManager {
 
         let x = headerWidth + colIndex * this.defaultWidth;
 
-        for (const [index, width] of this.customWidths.entries()) {
+        this._ensureSortedWidths();
+        for (const [index, width] of this.sortedCustomWidths) {
             if (index < colIndex) {
                 x += width - this.defaultWidth;
+            } else {
+                // Since the list is sorted, we can stop iterating early.
+                break;
             }
         }
 
@@ -62,12 +77,8 @@ export class ColumnManager {
             Math.min(estimatedIndex, this.totalCols - 1)
         );
 
-        let estimatedPos = estimatedIndex * this.defaultWidth;
-        for (const [index, width] of this.customWidths.entries()) {
-            if (index < estimatedIndex) {
-                estimatedPos += width - this.defaultWidth;
-            }
-        }
+        let estimatedPos =
+            this.getPosition(estimatedIndex, headerWidth) - headerWidth;
 
         if (estimatedPos > contentX) {
             while (estimatedPos > contentX && estimatedIndex > 0) {
@@ -86,8 +97,6 @@ export class ColumnManager {
                 currentPosWithWidth += this.getWidth(estimatedIndex);
             }
         }
-
-        // maxcolIndex = max(maxcolIndex, estimatedIndex);
         return estimatedIndex;
     }
 }

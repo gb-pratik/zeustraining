@@ -1,11 +1,34 @@
 export class StatusBar {
-    // Initializes the StatusBar by getting references to the DOM elements.
-    constructor() {
-        this.avgEl = document.getElementById("stat-avg");
-        this.countEl = document.getElementById("stat-count");
-        this.minEl = document.getElementById("stat-min");
-        this.maxEl = document.getElementById("stat-max");
-        this.sumEl = document.getElementById("stat-sum");
+    constructor(statusBarElement) {
+        this.container = statusBarElement;
+        this._createDOMElements();
+    }
+
+    //  Creates the internal span elements and appends them to the container.
+    _createDOMElements() {
+        // Create elements for each stat
+        this.avgEl = this._createStatElement("Average", "stat-avg");
+        this.countEl = this._createStatElement("Count", "stat-count");
+        this.minEl = this._createStatElement("Min", "stat-min");
+        this.maxEl = this._createStatElement("Max", "stat-max");
+        this.sumEl = this._createStatElement("Sum", "stat-sum");
+    }
+
+    // Helper function to create a label and value span pair.
+    _createStatElement(labelText, id) {
+        const wrapper = document.createElement("span");
+        const label = document.createElement("span");
+        label.textContent = `${labelText}: `;
+
+        const valueSpan = document.createElement("span");
+        valueSpan.id = id;
+        valueSpan.textContent = "0";
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(valueSpan);
+        this.container.appendChild(wrapper);
+
+        return valueSpan; // Return the element we need to update
     }
 
     // Clears all the statistical data from the status bar.
@@ -34,10 +57,13 @@ export class StatusBar {
         const min = Math.min(...numbers);
         const max = Math.max(...numbers);
 
-        this.avgEl.textContent = avg.toFixed(2);
-        this.countEl.textContent = count.toString();
-        this.minEl.textContent = min.toString();
-        this.maxEl.textContent = max.toString();
-        this.sumEl.textContent = sum.toString();
+        this.avgEl.textContent = avg.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+        this.countEl.textContent = count.toLocaleString();
+        this.minEl.textContent = min.toLocaleString();
+        this.maxEl.textContent = max.toLocaleString();
+        this.sumEl.textContent = sum.toLocaleString();
     }
 }

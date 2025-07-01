@@ -4,7 +4,7 @@ export class ScrollBarManager {
         this.grid = grid;
         this.onScroll = onScroll;
 
-        this.size = 12;
+        this.size = 16;
         this.trackColor = "#f0f0f0";
         this.thumbColor = "#cccccc";
         this.thumbActiveColor = "#9e9e9e";
@@ -42,7 +42,7 @@ export class ScrollBarManager {
             this.vThumb = {
                 x: viewWidth - this.size,
                 y: thumbY,
-                width: 6,
+                width: 9,
                 height: thumbHeight,
             };
         } else {
@@ -66,7 +66,7 @@ export class ScrollBarManager {
                 x: thumbX,
                 y: viewHeight - this.size,
                 width: thumbWidth,
-                height: 6,
+                height: 9,
             };
         } else {
             this.hThumb = null;

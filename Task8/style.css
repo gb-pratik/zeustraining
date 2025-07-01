@@ -1,4 +1,3 @@
-/* Use code with caution. */
 body,
 html {
     margin: 0;
@@ -7,28 +6,28 @@ html {
     height: 100%;
     overflow: hidden;
     font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
 }
 
 #grid-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 30px;
+    flex-grow: 1;
+    position: relative;
+    min-height: 0;
+    display: flex;
 }
 
 #grid-canvas {
     position: absolute;
     top: 0;
     left: 0;
+    width: 100%;
+    height: 100%;
 }
 
 #status-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
     height: 30px;
+    flex-shrink: 0;
     background-color: #f0f0f0;
     border-top: 1px solid #ccc;
     display: flex;
@@ -36,18 +35,15 @@ html {
     padding: 0 10px;
     font-size: 12px;
     color: #333;
+    justify-content: flex-end;
 }
 
 #status-bar span {
-    margin-right: 20px;
-}
-div#status-bar {
-    justify-content: end;
+    margin-left: 20px;
 }
 
 .cell-editor {
     position: absolute;
-    /* border: 2px solid #168045; */
     border: none;
     outline: none;
     padding: 0;
@@ -55,4 +51,5 @@ div#status-bar {
     box-sizing: border-box;
     font-family: Arial, sans-serif;
     font-size: 14px;
+    text-align: right;
 }

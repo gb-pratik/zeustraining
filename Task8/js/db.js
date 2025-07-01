@@ -19,13 +19,13 @@ function initDB() {
         request.onupgradeneeded = (event) => {
             const database = event.target.result;
             if (!database.objectStoreNames.contains(CELL_STORE)) {
-                database.createObjectStore(CELL_STORE, { keyPath: "id" }); // id is "row:col"
+                database.createObjectStore(CELL_STORE, { keyPath: "id" }); // id is a "row:col" string
             }
             if (!database.objectStoreNames.contains(COL_WIDTH_STORE)) {
-                database.createObjectStore(COL_WIDTH_STORE, { keyPath: "id" }); // id is colIndex
+                database.createObjectStore(COL_WIDTH_STORE, { keyPath: "id" }); // id is colIndex int
             }
             if (!database.objectStoreNames.contains(ROW_HEIGHT_STORE)) {
-                database.createObjectStore(ROW_HEIGHT_STORE, { keyPath: "id" }); // id is rowIndex
+                database.createObjectStore(ROW_HEIGHT_STORE, { keyPath: "id" }); // id is rowIndex int
             }
         };
 
@@ -82,11 +82,44 @@ function getAllData(storeName) {
     });
 }
 
+function getMultipleData(storeName, ids) {
+    return new Promise((resolve, reject) => {
+        if (!db) {
+            return reject("Database not initialized.");
+        }
+        if (!ids || ids.length === 0) {
+            return resolve([]);
+        }
+
+        const transaction = db.transaction([storeName], "readonly");
+        const store = transaction.objectStore(storeName);
+        const results = [];
+
+        transaction.oncomplete = () => {
+            resolve(results);
+        };
+        transaction.onerror = (event) => {
+            console.error("Get multiple data error:", event.target.error);
+            reject(event.target.error);
+        };
+
+        ids.forEach((id) => {
+            const request = store.get(id);
+            request.onsuccess = () => {
+                if (request.result) {
+                    results.push(request.result);
+                }
+            };
+        });
+    });
+}
+
 export {
     initDB,
     setData,
     getData,
     getAllData,
+    getMultipleData,
     CELL_STORE,
     COL_WIDTH_STORE,
     ROW_HEIGHT_STORE,

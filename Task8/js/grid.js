@@ -12,10 +12,9 @@ import { StatusBar } from "./statusBar.js";
 import { ScrollBarManager } from "./scrollBarManager.js";
 
 export class Grid {
-    // Initializes the grid, sets up managers, and binds initial events.
-    constructor(canvas, options) {
-        this.canvas = canvas;
-        this.ctx = canvas.getContext("2d");
+    // Initializes the grid, sets up options, creates DOM elements, and initializes managers.
+    constructor(container, options) {
+        this.container = container;
         this.options = {
             totalRows: 100000,
             totalCols: 1000,
@@ -27,6 +26,9 @@ export class Grid {
             ...options,
         };
 
+        this._createDOM();
+
+        this.ctx = this.canvas.getContext("2d");
         this.dpr = window.devicePixelRatio || 1;
         this.scrollX = 0;
         this.scrollY = 0;
@@ -35,6 +37,7 @@ export class Grid {
         this.animationFrameId = null;
         this.maxRenderedRow = 0;
         this.maxRenderedCol = 0;
+
         this.commandManager = new CommandManager();
         this.cellManager = new CellManager();
         this.columnManager = new ColumnManager({
@@ -45,7 +48,9 @@ export class Grid {
             totalRows: this.options.totalRows,
             defaultHeight: this.options.defaultRowHeight,
         });
-        this.statusBar = new StatusBar();
+
+        this.statusBar = new StatusBar(this.statusBarElement);
+
         this.selectionManager = new SelectionManager(
             this,
             this.onSelectionChange.bind(this)
@@ -59,8 +64,27 @@ export class Grid {
         this.resizeCanvas();
     }
 
+    // Creates the necessary DOM elements for the grid (container, canvas, status bar).
+    _createDOM() {
+        // Create grid container
+        this.gridContainer = document.createElement("div");
+        this.gridContainer.id = "grid-container";
+
+        // Create canvas
+        this.canvas = document.createElement("canvas");
+        this.canvas.id = "grid-canvas";
+        this.canvas.tabIndex = 0;
+
+        this.statusBarElement = document.createElement("div");
+        this.statusBarElement.id = "status-bar";
+
+        // Append elements to the main container
+        this.gridContainer.appendChild(this.canvas);
+        this.container.appendChild(this.gridContainer);
+        this.container.appendChild(this.statusBarElement);
+    }
+
     // Asynchronously loads initial data like column widths and row heights.
-    // Sets up the initial viewport and triggers the first draw.
     async init() {
         await this.columnManager.loadWidths();
         await this.rowManager.loadHeights();
@@ -84,18 +108,17 @@ export class Grid {
         this.requestDraw();
     }
 
-    // Schedules a redraw of the grid.
+    // Requests an animation frame to draw the grid, preventing multiple draws in a single frame.
     requestDraw() {
         if (!this.animationFrameId) {
             this.animationFrameId = requestAnimationFrame(() => {
-                this.draw().then(() => {
-                    this.animationFrameId = null;
-                });
+                this.draw(); // Draw is now synchronous
+                this.animationFrameId = null;
             });
         }
     }
 
-    // Binds all necessary DOM events for grid interaction.
+    // Binds all necessary event listeners (mouse, keyboard, resize).
     _bindEvents() {
         window.addEventListener("resize", this.resizeCanvas.bind(this));
         this.canvas.addEventListener(
@@ -117,19 +140,15 @@ export class Grid {
         this.canvas.addEventListener("wheel", this._handleWheel.bind(this), {
             passive: false,
         });
-        // Add keydown listener to the canvas for navigation
         this.canvas.addEventListener("keydown", this._handleKeyDown.bind(this));
     }
 
-    // Adjusts the canvas size to fit its container and handles high-DPI displays.
+    // Handles resizing of the canvas when the window is resized.
     resizeCanvas() {
         const container = this.canvas.parentElement;
         const rect = container.getBoundingClientRect();
 
         this.dpr = window.devicePixelRatio || 1;
-
-        this.canvas.style.width = `${rect.width}px`;
-        this.canvas.style.height = `${rect.height}px`;
 
         this.canvas.width = Math.floor(rect.width * this.dpr);
         this.canvas.height = Math.floor(rect.height * this.dpr);
@@ -137,8 +156,8 @@ export class Grid {
         this.requestDraw();
     }
 
-    // Main drawing function that orchestrates the rendering of the entire grid.
-    async draw() {
+    // The main drawing loop that renders the grid, headers, cells, and scrollbars.
+    draw() {
         const viewWidth = this.canvas.clientWidth;
         const viewHeight = this.canvas.clientHeight;
 
@@ -156,9 +175,8 @@ export class Grid {
         this.dpr = window.devicePixelRatio || 1;
         this.ctx.scale(this.dpr, this.dpr);
 
-        const visibleCellData = await this.cellManager.getVisibleCellData(
-            visibleRange
-        );
+        const visibleCellData =
+            this.cellManager.getVisibleCellDataFromCache(visibleRange);
 
         this.ctx.clearRect(0, 0, viewWidth, viewHeight);
         this.ctx.font = this.options.font;
@@ -172,9 +190,17 @@ export class Grid {
         this.scrollBarManager.draw(this.ctx);
 
         this.ctx.restore();
+
+        this.cellManager
+            .prefetchVisibleCellData(visibleRange)
+            .then((newDataLoaded) => {
+                if (newDataLoaded) {
+                    this.requestDraw();
+                }
+            });
     }
 
-    // Draws the horizontal and vertical grid lines within the visible range.
+    // Draws the grid lines for the visible range of cells.
     _drawGridLines(visibleRange) {
         const { startRow, endRow, startCol, endCol } = visibleRange;
         const { headerWidth, headerHeight } = this.options;
@@ -217,22 +243,20 @@ export class Grid {
         this.ctx.restore();
     }
 
-    // Renders the column and row headers, including labels and borders.
+    // Draws the column and row headers.
     _drawHeaders(visibleRange) {
         const { startRow, endRow, startCol, endCol } = visibleRange;
         const { headerWidth, headerHeight, font } = this.options;
         const viewWidth = this.canvas.clientWidth;
         const viewHeight = this.canvas.clientHeight;
 
-        // Draw header backgrounds
         this.ctx.fillStyle = "rgb(245, 245, 245)";
         this.ctx.fillRect(0, 0, viewWidth, headerHeight);
         this.ctx.fillRect(0, 0, headerWidth, viewHeight);
 
-        // Set text properties
         this.ctx.fillStyle = "rgb(97, 97, 97)";
         this.ctx.textBaseline = "middle";
-        this.ctx.font = `bold ${font}`;
+        this.ctx.font = `semi-bold ${font}`;
 
         this.ctx.save();
         this.ctx.beginPath();
@@ -251,7 +275,7 @@ export class Grid {
             );
             currentX += colWidth;
         }
-        this.ctx.restore(); // Remove clipping
+        this.ctx.restore();
 
         this.ctx.save();
         this.ctx.beginPath();
@@ -262,11 +286,10 @@ export class Grid {
             this.rowManager.getPosition(startRow, headerHeight) - this.scrollY;
         for (let i = startRow; i <= endRow; i++) {
             const rowHeight = this.rowManager.getHeight(i);
-            this.ctx.fillText(i + 1, headerWidth - 8, currentY + rowHeight / 2);
+            this.ctx.fillText(i + 1, headerWidth - 6, currentY + rowHeight / 2);
             currentY += rowHeight;
         }
-        this.ctx.restore(); // Remove clipping
-
+        this.ctx.restore();
         this.ctx.font = font;
 
         this.ctx.save();
@@ -298,7 +321,6 @@ export class Grid {
             currentY += this.rowManager.getHeight(i);
         }
 
-        // Main header intersection lines
         this.ctx.moveTo(0, Math.floor(headerHeight));
         this.ctx.lineTo(viewWidth, Math.floor(headerHeight));
         this.ctx.moveTo(Math.floor(headerWidth), 0);
@@ -308,7 +330,7 @@ export class Grid {
         this.ctx.restore();
     }
 
-    // Renders the cell data within the visible range.
+    // Draws the data for the visible cells.
     _drawVisibleCellData(visibleRange, visibleCellData) {
         const { startRow, endRow, startCol, endCol } = visibleRange;
         const { headerWidth, headerHeight } = this.options;
@@ -331,7 +353,19 @@ export class Grid {
                     this.ctx.beginPath();
                     this.ctx.rect(x, y, colWidth, rowHeight);
                     this.ctx.clip();
-                    this.ctx.fillText(value, x + 5, y + rowHeight / 2);
+                    let num = Number(value);
+                    if (typeof num === "number" && !isNaN(num)) {
+                        const len = this.ctx.measureText(value);
+                        this.ctx.fillText(
+                            value,
+                            x +
+                                (this.columnManager.getWidth(c) - len.width) -
+                                2,
+                            y + rowHeight / 2
+                        );
+                    } else {
+                        this.ctx.fillText(value, x + 5, y + rowHeight / 2);
+                    }
                     this.ctx.restore();
                 }
                 x += colWidth;
@@ -340,9 +374,8 @@ export class Grid {
         }
     }
 
-    // Handles the initial mouse down event, determining if it's a scroll, resize, or selection.
+    // Handles the `mousedown` event for selection, resizing, and scrolling.
     _handleMouseDown(e) {
-        // Give focus to canvas on click to enable keyboard events
         this.canvas.focus();
         const { x, y } = this._getMousePos(e);
         if (this.scrollBarManager.handleMouseDown(x, y)) {
@@ -398,7 +431,7 @@ export class Grid {
         }
     }
 
-    // Manages mouse movement globally, sending to specific handlers based on the current interaction state.
+    // Handles the global `mousemove` event for resizing, selecting, and scrolling.
     _handleGlobalMouseMove(e) {
         const { x, y } = this._getMousePos(e);
         if (this.interactionState === "scrolling") {
@@ -416,6 +449,7 @@ export class Grid {
                 newWidth
             );
             this.columnManager.positionCache.clear();
+            this.columnManager.sortedCustomWidths = null;
             this.requestDraw();
         } else if (this.interactionState === "resizing-row") {
             const dy = y - this.interactionData.startY;
@@ -428,6 +462,7 @@ export class Grid {
                 newHeight
             );
             this.rowManager.positionCache.clear();
+            this.rowManager.sortedCustomHeights = null;
             this.requestDraw();
         } else if (this.interactionState === "selecting") {
             const rowIndex = this._getRowIndexAt(y);
@@ -435,14 +470,14 @@ export class Grid {
             if (rowIndex !== -1 && colIndex !== -1) {
                 this.selectionManager.extendTo(rowIndex, colIndex);
                 this.requestDraw();
+                this._ensureCellIsVisible(rowIndex + 1, colIndex + 1);
             }
         } else if (e.target === this.canvas) {
             this._handleMouseMove(e);
         }
     }
 
-    // Handles mouse movement over the canvas when no specific interaction is active.
-    // Primarily used to update the cursor for resize handles.
+    // Handles the `mousemove` event over the canvas to change the cursor for resizing.
     _handleMouseMove(e) {
         if (this.interactionState !== "none") return;
         const { x, y } = this._getMousePos(e);
@@ -454,7 +489,7 @@ export class Grid {
             : "default";
     }
 
-    // Finalizes interactions like resizing or scrolling when the mouse button is released.
+    // Handles the global `mouseup` event to finish actions like resizing.
     async _handleGlobalMouseUp(e) {
         if (this.interactionState === "scrolling") {
             this.scrollBarManager.handleMouseUp();
@@ -491,7 +526,7 @@ export class Grid {
         this.canvas.style.cursor = "default";
     }
 
-    // Initiates cell editing mode on a double-click event.
+    // Handles the `dblclick` event to start editing a cell.
     _handleDoubleClick(e) {
         const { x, y } = this._getMousePos(e);
         const { headerWidth, headerHeight } = this.options;
@@ -503,13 +538,13 @@ export class Grid {
         }
     }
 
-    // Handles mouse wheel events for scrolling the grid.
+    // Handles the `wheel` event for scrolling.
     _handleWheel(e) {
         e.preventDefault();
         this._onScrollBarScroll(e.deltaX, e.deltaY);
     }
 
-    // Manages arrow keys for cell selection.
+    // Handles `keydown` events for navigating the grid with arrow keys.
     _handleKeyDown(e) {
         const currentSelection = this.selectionManager.selection;
         if (!currentSelection) return;
@@ -523,12 +558,10 @@ export class Grid {
         let nextRow = row;
         let nextCol = col;
 
-        // Collapse range to a single cell based on key press
         if (currentSelection.type === "range") {
             nextRow = currentSelection.start.row;
             nextCol = currentSelection.start.col;
         }
-        // Move from the current single cell
         switch (e.key) {
             case "ArrowUp":
                 nextRow = Math.max(0, row - 1);
@@ -549,7 +582,7 @@ export class Grid {
         this.requestDraw();
     }
 
-    // Callback function for scrollbar interactions, updating scroll position and redrawing.
+    // Handles scrolling from the scrollbar manager.
     _onScrollBarScroll(dx, dy) {
         const maxScrollX = Math.max(
             0,
@@ -566,7 +599,7 @@ export class Grid {
         this.requestDraw();
     }
 
-    // Creates and manages an input element for editing a cell's content.
+    // Creates an input element to allow editing of a cell's content.
     async _startEditing(row, col) {
         const { headerWidth, headerHeight } = this.options;
         const x =
@@ -580,8 +613,8 @@ export class Grid {
         input.type = "text";
         input.className = "cell-editor";
         input.value = oldValue;
-        input.style.left = `${x}px`;
-        input.style.top = `${y}px`;
+        input.style.left = `${this.gridContainer.offsetLeft + x}px`;
+        input.style.top = `${this.gridContainer.offsetTop + y}px`;
         input.style.width = `${width}px`;
         input.style.height = `${height}px`;
         input.style.font = this.options.font;
@@ -601,8 +634,8 @@ export class Grid {
                 );
                 this.commandManager.execute(command);
             }
-            if (document.body.contains(input)) {
-                document.body.removeChild(input);
+            if (this.container.contains(input)) {
+                this.container.removeChild(input);
             }
             this.canvas.focus();
         };
@@ -615,12 +648,12 @@ export class Grid {
                 input.blur();
             }
         });
-        document.body.appendChild(input);
+        this.container.appendChild(input);
         input.focus();
         input.select();
     }
 
-    // Updates the status bar with information about the current selection.
+    // Handles changes in the selection and updates the status bar.
     async onSelectionChange(selection) {
         if (!selection) {
             this.statusBar.clear();
@@ -659,11 +692,11 @@ export class Grid {
         this.statusBar.update(values);
     }
 
-    // Calculates the total width of the grid content, including headers.
+    // Calculates the total width of the grid content.
     getTotalContentWidth() {
         const effectiveCols = Math.min(
             this.options.totalCols,
-            this.maxRenderedCol + 50
+            this.maxRenderedCol + 25
         );
         return this.columnManager.getPosition(
             effectiveCols,
@@ -671,13 +704,11 @@ export class Grid {
         );
     }
 
-    // Calculates the total height of the grid content, including headers.
+    // Calculates the total height of the grid content.
     getTotalContentHeight() {
         const effectiveRows = Math.min(
             this.options.totalRows,
-            this.maxRenderedRow + 100
-            // so that the scroll bar is not at the bottom until its not at the last row
-            // because if it is at bottom it will look like its the end of the document
+            this.maxRenderedRow + 25
         );
         return this.rowManager.getPosition(
             effectiveRows,
@@ -691,7 +722,7 @@ export class Grid {
         return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     }
 
-    // Converts a column index to its corresponding alphabetical label (e.g., 0 -> A, 1 -> B).
+    // Converts a column index to a letter-based label (A, B, C...).
     _getColLabel(colIndex) {
         let label = "",
             temp = colIndex;
@@ -702,12 +733,13 @@ export class Grid {
         return label;
     }
 
-    // Detects if the mouse is over a resize handle for a row or column.
+    // Checks if the mouse is over a resize handle for a column or row.
     _getResizeHandle(x, y) {
         const { headerWidth, headerHeight } = this.options;
         const handleThreshold = 5;
+        const visibleRange = this._getVisibleRange();
+
         if (y < headerHeight) {
-            const visibleRange = this._getVisibleRange();
             let currentX =
                 this.columnManager.getPosition(
                     visibleRange.startCol,
@@ -721,7 +753,6 @@ export class Grid {
             }
         }
         if (x < headerWidth) {
-            const visibleRange = this._getVisibleRange();
             let currentY =
                 this.rowManager.getPosition(
                     visibleRange.startRow,
@@ -753,7 +784,7 @@ export class Grid {
         );
     }
 
-    // Determines the range of visible rows and columns based on the current scroll position.
+    // Calculates the visible range of rows and columns based on the scroll position.
     _getVisibleRange() {
         const { headerWidth, headerHeight, totalRows, totalCols } =
             this.options;
@@ -767,13 +798,13 @@ export class Grid {
         const endCol = endColCheck !== -1 ? endColCheck : totalCols - 1;
         return {
             startRow: Math.max(0, startRow),
-            endRow: Math.min(totalRows - 1, endRow + 5), // Increased buffer
+            endRow: Math.min(totalRows - 1, endRow + 5),
             startCol: Math.max(0, startCol),
-            endCol: Math.min(totalCols - 1, endCol + 5), // Increased buffer
+            endCol: Math.min(totalCols - 1, endCol + 5),
         };
     }
 
-    // Ensures that a given cell is visible within the viewport, scrolling if necessary.
+    // Ensures that a given cell is visible in the viewport by scrolling if necessary.
     _ensureCellIsVisible(row, col) {
         const { headerWidth, headerHeight } = this.options;
         const viewWidth = this.canvas.clientWidth;
@@ -784,24 +815,19 @@ export class Grid {
         const w = this.columnManager.getWidth(col);
         const h = this.rowManager.getHeight(row);
 
-        // Scroll right if cell is past the right edge
         if (x + w > this.scrollX + viewWidth) {
             this.scrollX = x + w - viewWidth;
         }
-        // Scroll left if cell is past the left edge
         if (x < this.scrollX + headerWidth) {
             this.scrollX = x - headerWidth;
         }
-        // Scroll down if cell is past the bottom edge
         if (y + h > this.scrollY + viewHeight) {
             this.scrollY = y + h - viewHeight;
         }
-        // Scroll up if cell is past the top edge
         if (y < this.scrollY + headerHeight) {
             this.scrollY = y - headerHeight;
         }
 
-        // Clamp scroll values to be within bounds
         const maxScrollX = Math.max(0, this.getTotalContentWidth() - viewWidth);
         const maxScrollY = Math.max(
             0,

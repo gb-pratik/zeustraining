@@ -61,12 +61,12 @@ export class SelectionManager {
         const { rowManager, columnManager, options, canvas } = this.grid;
         const { headerHeight, headerWidth } = options;
 
-        ctx.fillStyle = "rgba(19, 126, 67,0.06)";
+        ctx.fillStyle = "rgba(19, 126, 67,0.08)";
         ctx.strokeStyle = "rgba(19, 126, 67,1)";
         ctx.lineWidth = 2;
 
-        let x, y, w, h;
-
+        let x, y, w, h, sw, sh;
+        let flag = 0;
         switch (this.selection.type) {
             case "cell": {
                 const { row, col } = this.selection;
@@ -89,29 +89,38 @@ export class SelectionManager {
                     scrollY;
                 w = endX - x;
                 h = endY - y;
+                sw = columnManager.getWidth(start.col);
+                sh = rowManager.getHeight(start.row);
+                flag = 1;
                 break;
             }
             case "col": {
                 const { col } = this.selection;
                 x = columnManager.getPosition(col, headerWidth) - scrollX;
-                y = 0;
+                y = headerHeight;
                 w = columnManager.getWidth(col);
-                h = canvas.height;
+                h = canvas.height - headerHeight;
                 break;
             }
             case "row": {
                 const { row } = this.selection;
-                x = 0;
+                x = headerWidth;
                 y = rowManager.getPosition(row, headerHeight) - scrollY;
-                w = canvas.width;
+                w = canvas.width - headerWidth;
                 h = rowManager.getHeight(row);
                 break;
             }
             default:
                 return;
         }
+        const { start, end } = this.selection;
 
-        // ctx.fillRect(x, y, w, h);
+        if (flag) {
+            ctx.fillRect(x + sw, y, w - sw, h);
+            ctx.fillRect(x, y + sh, sw, h - sh);
+        } else {
+            ctx.fillRect(x, y, w, h);
+        }
         // ctx.strokeRect(x, y, w, h);
         ctx.fillStyle = "rgba(19, 126, 67,0.2)";
         ctx.fillRect(x, 0, w, headerHeight);
@@ -132,6 +141,6 @@ export class SelectionManager {
         ctx.stroke();
 
         ctx.fillStyle = "rgb(16,124,65)";
-        ctx.fillRect(x + w - 2.8, y + h - 2.8, 4.2, 4.2);
+        ctx.fillRect(x + w - 2.8, y + h - 2.8, 4.4, 4.4);
     }
 }
