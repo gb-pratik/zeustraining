@@ -4,6 +4,7 @@ export class SelectionManager {
         this.selection = null;
         this.anchorCell = null;
         this.onSelectionChange = onSelectionChange;
+        this.selectionMode = "cell";
     }
 
     clearSelection() {
@@ -15,21 +16,40 @@ export class SelectionManager {
     setAnchor(row, col) {
         this.anchorCell = { row, col };
         this.selectCell(row, col);
+        this.selectionMode = "cell";
     }
 
     extendTo(row, col) {
         if (!this.anchorCell) return;
 
-        const startRow = Math.min(this.anchorCell.row, row);
-        const startCol = Math.min(this.anchorCell.col, col);
-        const endRow = Math.max(this.anchorCell.row, row);
-        const endCol = Math.max(this.anchorCell.col, col);
+        if (this.selectionMode === "row") {
+            const startRow = Math.min(this.anchorCell.row, row);
+            const endRow = Math.max(this.anchorCell.row, row);
+            this.selection = {
+                type: "range",
+                start: { row: startRow, col: 0 },
+                end: { row: endRow, col: this.grid.options.totalCols - 1 },
+            };
+        } else if (this.selectionMode === "col") {
+            const startCol = Math.min(this.anchorCell.col, col);
+            const endCol = Math.max(this.anchorCell.col, col);
+            this.selection = {
+                type: "range",
+                start: { row: 0, col: startCol },
+                end: { row: this.grid.options.totalRows - 1, col: endCol },
+            };
+        } else {
+            const startRow = Math.min(this.anchorCell.row, row);
+            const startCol = Math.min(this.anchorCell.col, col);
+            const endRow = Math.max(this.anchorCell.row, row);
+            const endCol = Math.max(this.anchorCell.col, col);
 
-        this.selection = {
-            type: "range",
-            start: { row: startRow, col: startCol },
-            end: { row: endRow, col: endCol },
-        };
+            this.selection = {
+                type: "range",
+                start: { row: startRow, col: startCol },
+                end: { row: endRow, col: endCol },
+            };
+        }
         this.onSelectionChange(this.selection);
     }
 
@@ -40,18 +60,25 @@ export class SelectionManager {
 
     selectCol(col) {
         this.selection = { type: "col", col };
+        this.anchorCell = { row: 0, col: col };
+        this.selectionMode = "col";
         this.onSelectionChange(this.selection);
     }
 
     selectRow(row) {
         this.selection = { type: "row", row };
+        this.anchorCell = { row: row, col: 0 };
+        this.selectionMode = "row";
         this.onSelectionChange(this.selection);
     }
 
     getActiveCell() {
         if (!this.selection) return null;
         if (this.selection.type === "cell") return this.selection;
-        if (this.selection.type === "range") return this.selection.start;
+        if (this.selection.type === "range") return this.anchorCell;
+        if (this.selection.type === "row" || this.selection.type === "col") {
+            return this.anchorCell;
+        }
         return null;
     }
 
@@ -65,8 +92,8 @@ export class SelectionManager {
         ctx.strokeStyle = "rgba(19, 126, 67,1)";
         ctx.lineWidth = 2;
 
-        let x, y, w, h, sw, sh;
-        let flag = 0;
+        let x, y, w, h;
+
         switch (this.selection.type) {
             case "cell": {
                 const { row, col } = this.selection;
@@ -74,6 +101,7 @@ export class SelectionManager {
                 y = rowManager.getPosition(row, headerHeight) - scrollY;
                 w = columnManager.getWidth(col);
                 h = rowManager.getHeight(row);
+                ctx.fillRect(x, y, w, h);
                 break;
             }
             case "range": {
@@ -89,9 +117,34 @@ export class SelectionManager {
                     scrollY;
                 w = endX - x;
                 h = endY - y;
-                sw = columnManager.getWidth(start.col);
-                sh = rowManager.getHeight(start.row);
-                flag = 1;
+
+                const { row: anchorRow, col: anchorCol } = this.anchorCell;
+                const anchorW = columnManager.getWidth(anchorCol);
+                const anchorH = rowManager.getHeight(anchorRow);
+                const anchorX =
+                    columnManager.getPosition(anchorCol, headerWidth) - scrollX;
+                const anchorY =
+                    rowManager.getPosition(anchorRow, headerHeight) - scrollY;
+
+                // Fill around the anchor cell
+                // Left of anchor
+                ctx.fillRect(x, y, anchorX - x, h);
+                // Right of anchor
+                ctx.fillRect(
+                    anchorX + anchorW,
+                    y,
+                    x + w - (anchorX + anchorW),
+                    h
+                );
+                // Above anchor
+                ctx.fillRect(anchorX, y, anchorW, anchorY - y);
+                // Below anchor
+                ctx.fillRect(
+                    anchorX,
+                    anchorY + anchorH,
+                    anchorW,
+                    y + h - (anchorY + anchorH)
+                );
                 break;
             }
             case "col": {
@@ -100,6 +153,7 @@ export class SelectionManager {
                 y = headerHeight;
                 w = columnManager.getWidth(col);
                 h = canvas.height - headerHeight;
+                ctx.fillRect(x, y, w, h);
                 break;
             }
             case "row": {
@@ -108,21 +162,15 @@ export class SelectionManager {
                 y = rowManager.getPosition(row, headerHeight) - scrollY;
                 w = canvas.width - headerWidth;
                 h = rowManager.getHeight(row);
+                ctx.fillRect(x, y, w, h);
                 break;
             }
             default:
                 return;
         }
-        const { start, end } = this.selection;
 
-        if (flag) {
-            ctx.fillRect(x + sw, y, w - sw, h);
-            ctx.fillRect(x, y + sh, sw, h - sh);
-        } else {
-            ctx.fillRect(x, y, w, h);
-        }
-        // ctx.strokeRect(x, y, w, h);
-        ctx.fillStyle = "rgba(19, 126, 67,0.2)";
+        // Draw header highlights and selection border
+        ctx.fillStyle = "rgba(19, 126, 67,0.3)";
         ctx.fillRect(x, 0, w, headerHeight);
         ctx.fillRect(0, y, headerWidth, h);
         ctx.fillStyle = "rgb(0, 0, 0)";

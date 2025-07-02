@@ -51,9 +51,9 @@ export class StatusBar {
             return;
         }
 
-        const count = numbers.length;
+        const count = cellValues.length;
         const sum = numbers.reduce((a, b) => a + b, 0);
-        const avg = sum / count;
+        const avg = sum / numbers.length;
         const min = Math.min(...numbers);
         const max = Math.max(...numbers);
 

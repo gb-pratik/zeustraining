@@ -37,7 +37,6 @@ export class Grid {
         this.animationFrameId = null;
         this.maxRenderedRow = 0;
         this.maxRenderedCol = 0;
-
         this.commandManager = new CommandManager();
         this.cellManager = new CellManager();
         this.columnManager = new ColumnManager({
@@ -208,7 +207,6 @@ export class Grid {
         const viewHeight = this.canvas.clientHeight;
 
         this.ctx.save();
-        this.ctx.translate(0.5, 0.5);
         this.ctx.lineWidth = 1 / this.dpr;
         this.ctx.strokeStyle = "rgb(224, 224, 224)";
         this.ctx.beginPath();
@@ -217,7 +215,7 @@ export class Grid {
             this.columnManager.getPosition(startCol, headerWidth) -
             this.scrollX;
         for (let i = startCol; i <= endCol + 1; i++) {
-            const x = Math.floor(currentX);
+            const x = (Math.floor(currentX * this.dpr) + 0.5) / this.dpr;
             if (x > headerWidth) {
                 this.ctx.moveTo(x, headerHeight);
                 this.ctx.lineTo(x, viewHeight);
@@ -230,7 +228,7 @@ export class Grid {
         let currentY =
             this.rowManager.getPosition(startRow, headerHeight) - this.scrollY;
         for (let i = startRow; i <= endRow + 1; i++) {
-            const y = Math.floor(currentY);
+            const y = (Math.floor(currentY * this.dpr) + 0.5) / this.dpr;
             if (y > headerHeight) {
                 this.ctx.moveTo(headerWidth, y);
                 this.ctx.lineTo(viewWidth, y);
@@ -293,7 +291,6 @@ export class Grid {
         this.ctx.font = font;
 
         this.ctx.save();
-        this.ctx.translate(0.5, 0.5);
         this.ctx.lineWidth = 1 / this.dpr;
         this.ctx.strokeStyle = "#ccc";
         this.ctx.beginPath();
@@ -302,7 +299,7 @@ export class Grid {
             this.columnManager.getPosition(startCol, headerWidth) -
             this.scrollX;
         for (let i = startCol; i <= endCol; i++) {
-            const x = Math.floor(currentX);
+            const x = (Math.floor(currentX * this.dpr) + 0.5) / this.dpr;
             if (x >= headerWidth) {
                 this.ctx.moveTo(x, 0);
                 this.ctx.lineTo(x, headerHeight);
@@ -313,7 +310,7 @@ export class Grid {
         currentY =
             this.rowManager.getPosition(startRow, headerHeight) - this.scrollY;
         for (let i = startRow; i <= endRow; i++) {
-            const y = Math.floor(currentY);
+            const y = (Math.floor(currentY * this.dpr) + 0.5) / this.dpr;
             if (y >= headerHeight) {
                 this.ctx.moveTo(0, y);
                 this.ctx.lineTo(headerWidth, y);
@@ -321,10 +318,13 @@ export class Grid {
             currentY += this.rowManager.getHeight(i);
         }
 
-        this.ctx.moveTo(0, Math.floor(headerHeight));
-        this.ctx.lineTo(viewWidth, Math.floor(headerHeight));
-        this.ctx.moveTo(Math.floor(headerWidth), 0);
-        this.ctx.lineTo(Math.floor(headerWidth), viewHeight);
+        const headerHeightLine = (Math.floor(headerHeight * this.dpr) + 0.5) / this.dpr;
+        const headerWidthLine = (Math.floor(headerWidth * this.dpr) + 0.5) / this.dpr;
+
+        this.ctx.moveTo(0, headerHeightLine);
+        this.ctx.lineTo(viewWidth, headerHeightLine);
+        this.ctx.moveTo(headerWidthLine, 0);
+        this.ctx.lineTo(headerWidthLine, viewHeight);
 
         this.ctx.stroke();
         this.ctx.restore();
@@ -465,12 +465,26 @@ export class Grid {
             this.rowManager.sortedCustomHeights = null;
             this.requestDraw();
         } else if (this.interactionState === "selecting") {
-            const rowIndex = this._getRowIndexAt(y);
-            const colIndex = this._getColIndexAt(x);
-            if (rowIndex !== -1 && colIndex !== -1) {
-                this.selectionManager.extendTo(rowIndex, colIndex);
-                this.requestDraw();
-                this._ensureCellIsVisible(rowIndex + 1, colIndex + 1);
+            const { headerWidth, headerHeight } = this.options;
+            const rowIndex = y > headerHeight ? this._getRowIndexAt(y) : -1;
+            const colIndex = x > headerWidth ? this._getColIndexAt(x) : -1;
+
+            if (this.selectionManager.selectionMode === "row") {
+                if (rowIndex !== -1) {
+                    this.selectionManager.extendTo(rowIndex, colIndex);
+                    this.requestDraw();
+                }
+            } else if (this.selectionManager.selectionMode === "col") {
+                if (colIndex !== -1) {
+                    this.selectionManager.extendTo(rowIndex, colIndex);
+                    this.requestDraw();
+                }
+            } else {
+                if (rowIndex !== -1 && colIndex !== -1) {
+                    this.selectionManager.extendTo(rowIndex, colIndex);
+                    this.requestDraw();
+                    this._ensureCellIsVisible(rowIndex + 1, colIndex + 1);
+                }
             }
         } else if (e.target === this.canvas) {
             this._handleMouseMove(e);
@@ -549,8 +563,24 @@ export class Grid {
         const currentSelection = this.selectionManager.selection;
         if (!currentSelection) return;
 
-        const arrowKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
-        if (!arrowKeys.includes(e.key)) return;
+        if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+            const rowIndex = this.selectionManager.anchorCell.row;
+            const colIndex = this.selectionManager.anchorCell.col;
+            console.log(rowIndex, colIndex);
+
+            if (rowIndex !== -1 && colIndex !== -1) {
+                this._startEditing(rowIndex, colIndex);
+            }
+        }
+
+        const movementKeys = [
+            "ArrowUp",
+            "ArrowDown",
+            "ArrowLeft",
+            "ArrowRight",
+            "Tab",
+        ];
+        if (!movementKeys.includes(e.key)) return;
 
         e.preventDefault();
 
@@ -575,8 +605,10 @@ export class Grid {
             case "ArrowRight":
                 nextCol = Math.min(this.options.totalCols - 1, col + 1);
                 break;
+            case "Tab":
+                nextCol = Math.min(this.options.totalCols - 1, col + 1);
+                break;
         }
-
         this.selectionManager.setAnchor(nextRow, nextCol);
         this._ensureCellIsVisible(nextRow, nextCol);
         this.requestDraw();
@@ -639,6 +671,13 @@ export class Grid {
             }
             this.canvas.focus();
         };
+        const movementKeys = [
+            "ArrowUp",
+            "ArrowDown",
+            "ArrowLeft",
+            "ArrowRight",
+            "Tab",
+        ];
         input.addEventListener("blur", finishEditing);
         input.addEventListener("keydown", (e) => {
             if (e.key === "Enter") {
@@ -646,11 +685,16 @@ export class Grid {
             } else if (e.key === "Escape") {
                 input.value = oldValue;
                 input.blur();
+            } else if (movementKeys.includes(e.key)) {
+                input.value = oldValue;
+                input.blur();
+                this._handleKeyDown(e);
             }
         });
         this.container.appendChild(input);
         input.focus();
         input.select();
+        this.requestDraw();
     }
 
     // Handles changes in the selection and updates the status bar.
