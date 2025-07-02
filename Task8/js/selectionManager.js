@@ -101,7 +101,7 @@ export class SelectionManager {
                 y = rowManager.getPosition(row, headerHeight) - scrollY;
                 w = columnManager.getWidth(col);
                 h = rowManager.getHeight(row);
-                ctx.fillRect(x, y, w, h);
+                // ctx.fillRect(x, y, w, h);
                 break;
             }
             case "range": {
