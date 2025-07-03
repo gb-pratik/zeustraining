@@ -13,7 +13,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const grid = new Grid(appContainer, {});
 
-        await grid.init();
+        await grid.columnManager.loadWidths();
+        await grid.rowManager.loadHeights();
+        await grid.cellManager.loadMaxEditedCell();
+        grid.requestDraw();
 
         // Set up global keyboard shortcuts for undo and redo.
         window.addEventListener("keydown", (e) => {

@@ -46,12 +46,16 @@ export class StatusBar {
             .map((v) => parseFloat(v))
             .filter((n) => !isNaN(n));
 
-        if (numbers.length === 0) {
+        if (cellValues.length === 0) {
             this.clear();
             return;
         }
-
         const count = cellValues.length;
+        this.countEl.textContent = count.toLocaleString();
+        if (numbers.length === 0) {
+            // this.clear();
+            return;
+        }
         const sum = numbers.reduce((a, b) => a + b, 0);
         const avg = sum / numbers.length;
         const min = Math.min(...numbers);
@@ -61,7 +65,6 @@ export class StatusBar {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         });
-        this.countEl.textContent = count.toLocaleString();
         this.minEl.textContent = min.toLocaleString();
         this.maxEl.textContent = max.toLocaleString();
         this.sumEl.textContent = sum.toLocaleString();

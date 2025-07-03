@@ -35,8 +35,6 @@ export class Grid {
         this.interactionState = "none";
         this.interactionData = null;
         this.animationFrameId = null;
-        this.maxRenderedRow = 0;
-        this.maxRenderedCol = 0;
         this.commandManager = new CommandManager();
         this.cellManager = new CellManager();
         this.columnManager = new ColumnManager({
@@ -81,30 +79,6 @@ export class Grid {
         this.gridContainer.appendChild(this.canvas);
         this.container.appendChild(this.gridContainer);
         this.container.appendChild(this.statusBarElement);
-    }
-
-    // Asynchronously loads initial data like column widths and row heights.
-    async init() {
-        await this.columnManager.loadWidths();
-        await this.rowManager.loadHeights();
-
-        // Set initial rendered size based on viewport
-        const viewHeight = this.canvas.clientHeight || 500;
-        const viewWidth = this.canvas.clientWidth || 800;
-
-        let initialRows = this.rowManager.getRowIndexAt(
-            this.scrollY + viewHeight,
-            this.options.headerHeight
-        );
-        this.maxRenderedRow = initialRows > 0 ? initialRows + 20 : 50; // Add buffer
-
-        let initialCols = this.columnManager.getColIndexAt(
-            this.scrollX + viewWidth,
-            this.options.headerWidth
-        );
-        this.maxRenderedCol = initialCols > 0 ? initialCols + 10 : 20; // Add buffer
-
-        this.requestDraw();
     }
 
     // Requests an animation frame to draw the grid, preventing multiple draws in a single frame.
@@ -159,16 +133,9 @@ export class Grid {
     draw() {
         const viewWidth = this.canvas.clientWidth;
         const viewHeight = this.canvas.clientHeight;
+        const { headerWidth, headerHeight } = this.options;
 
         const visibleRange = this._getVisibleRange();
-        this.maxRenderedRow = Math.max(
-            this.maxRenderedRow,
-            visibleRange.endRow
-        );
-        this.maxRenderedCol = Math.max(
-            this.maxRenderedCol,
-            visibleRange.endCol
-        );
 
         this.ctx.save();
         this.dpr = window.devicePixelRatio || 1;
@@ -180,11 +147,36 @@ export class Grid {
         this.ctx.clearRect(0, 0, viewWidth, viewHeight);
         this.ctx.font = this.options.font;
 
+        // Draw base layers
         this._drawGridLines(visibleRange);
         this._drawHeaders(visibleRange);
-        this._drawVisibleCellData(visibleRange, visibleCellData);
-        this.selectionManager.draw(this.ctx, this.scrollX, this.scrollY);
 
+        // Clip the content area to prevent drawing over headers
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.rect(
+            headerWidth,
+            headerHeight,
+            viewWidth - headerWidth,
+            viewHeight - headerHeight
+        );
+        this.ctx.clip();
+
+        // Draw elements that must be within the content area
+        this._drawVisibleCellData(visibleRange, visibleCellData);
+        this.selectionManager.drawContent(this.ctx, this.scrollX, this.scrollY);
+
+        // Remove the clipping
+        this.ctx.restore();
+
+        // Draw elements that can overlay headers (selection highlights)
+        this.selectionManager.drawHeaderHighlights(
+            this.ctx,
+            this.scrollX,
+            this.scrollY
+        );
+
+        // Draw UI elements on top of everything
         this.scrollBarManager.update(this.scrollX, this.scrollY);
         this.scrollBarManager.draw(this.ctx);
 
@@ -247,15 +239,73 @@ export class Grid {
         const { headerWidth, headerHeight, font } = this.options;
         const viewWidth = this.canvas.clientWidth;
         const viewHeight = this.canvas.clientHeight;
+        const selection = this.selectionManager.selection;
+        const selectionMode = this.selectionManager.selectionMode;
 
+        // --- 1. Determine selection state ---
+        const isFullColSelection = selection && selectionMode === "col";
+        const isFullRowSelection = selection && selectionMode === "row";
+
+        const getSelectedIndices = (axis) => {
+            if (!selection) return {};
+            const key = axis; // 'col' or 'row'
+            if (selection.type === "cell" || selection.type === key) {
+                return { [selection[key]]: true };
+            }
+            if (selection.type === "range") {
+                const indices = {};
+                const start = selection.start[key];
+                const end = selection.end[key];
+                for (let i = start; i <= end; i++) {
+                    indices[i] = true;
+                }
+                return indices;
+            }
+            return {};
+        };
+        const selectedCols = getSelectedIndices("col");
+        const selectedRows = getSelectedIndices("row");
+
+        // --- 2. Draw base header background ---
         this.ctx.fillStyle = "rgb(245, 245, 245)";
         this.ctx.fillRect(0, 0, viewWidth, headerHeight);
         this.ctx.fillRect(0, 0, headerWidth, viewHeight);
 
-        this.ctx.fillStyle = "rgb(97, 97, 97)";
+        // --- 3. Draw special backgrounds for full selections ---
+        this.ctx.save();
+        this.ctx.fillStyle = "rgb(16,124,65)"; // Dark Green
+
+        if (isFullColSelection) {
+            let currentX =
+                this.columnManager.getPosition(startCol, headerWidth) -
+                this.scrollX;
+            for (let i = startCol; i <= endCol; i++) {
+                const colWidth = this.columnManager.getWidth(i);
+                if (selectedCols[i]) {
+                    this.ctx.fillRect(currentX, 0, colWidth, headerHeight);
+                }
+                currentX += colWidth;
+            }
+        }
+        if (isFullRowSelection) {
+            let currentY =
+                this.rowManager.getPosition(startRow, headerHeight) -
+                this.scrollY;
+            for (let i = startRow; i <= endRow; i++) {
+                const rowHeight = this.rowManager.getHeight(i);
+                if (selectedRows[i]) {
+                    this.ctx.fillRect(0, currentY, headerWidth, rowHeight);
+                }
+                currentY += rowHeight;
+            }
+        }
+        this.ctx.restore();
+
+        // --- 4. Draw Header Text ---
         this.ctx.textBaseline = "middle";
         this.ctx.font = `semi-bold ${font}`;
 
+        // Column Header Text
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.rect(headerWidth, 0, viewWidth - headerWidth, headerHeight);
@@ -266,6 +316,16 @@ export class Grid {
             this.scrollX;
         for (let i = startCol; i <= endCol; i++) {
             const colWidth = this.columnManager.getWidth(i);
+            const isSelected = selectedCols[i];
+
+            if (isSelected && isFullColSelection) {
+                this.ctx.fillStyle = "white";
+            } else if (isSelected) {
+                this.ctx.fillStyle = "rgb(16,124,65)";
+            } else {
+                this.ctx.fillStyle = "rgb(97, 97, 97)";
+            }
+
             this.ctx.fillText(
                 this._getColLabel(i),
                 currentX + colWidth / 2,
@@ -275,6 +335,7 @@ export class Grid {
         }
         this.ctx.restore();
 
+        // Row Header Text
         this.ctx.save();
         this.ctx.beginPath();
         this.ctx.rect(0, headerHeight, headerWidth, viewHeight - headerHeight);
@@ -284,17 +345,30 @@ export class Grid {
             this.rowManager.getPosition(startRow, headerHeight) - this.scrollY;
         for (let i = startRow; i <= endRow; i++) {
             const rowHeight = this.rowManager.getHeight(i);
+            const isSelected = selectedRows[i];
+
+            if (isSelected && isFullRowSelection) {
+                this.ctx.fillStyle = "white";
+            } else if (isSelected) {
+                this.ctx.fillStyle = "rgb(16,124,65)";
+            } else {
+                this.ctx.fillStyle = "rgb(97, 97, 97)";
+            }
+
             this.ctx.fillText(i + 1, headerWidth - 6, currentY + rowHeight / 2);
             currentY += rowHeight;
         }
         this.ctx.restore();
+
         this.ctx.font = font;
 
+        // --- 5. Draw Header Grid Lines ---
         this.ctx.save();
         this.ctx.lineWidth = 1 / this.dpr;
         this.ctx.strokeStyle = "#ccc";
         this.ctx.beginPath();
 
+        // Default grey lines
         currentX =
             this.columnManager.getPosition(startCol, headerWidth) -
             this.scrollX;
@@ -306,7 +380,6 @@ export class Grid {
             }
             currentX += this.columnManager.getWidth(i);
         }
-
         currentY =
             this.rowManager.getPosition(startRow, headerHeight) - this.scrollY;
         for (let i = startRow; i <= endRow; i++) {
@@ -317,16 +390,54 @@ export class Grid {
             }
             currentY += this.rowManager.getHeight(i);
         }
+        this.ctx.stroke();
 
-        const headerHeightLine = (Math.floor(headerHeight * this.dpr) + 0.5) / this.dpr;
-        const headerWidthLine = (Math.floor(headerWidth * this.dpr) + 0.5) / this.dpr;
+        // White separator lines for full selections
+        this.ctx.strokeStyle = "white";
+        this.ctx.beginPath();
+        if (isFullColSelection) {
+            currentX =
+                this.columnManager.getPosition(startCol, headerWidth) -
+                this.scrollX;
+            for (let i = startCol; i < endCol; i++) {
+                currentX += this.columnManager.getWidth(i);
+                if (selectedCols[i] && selectedCols[i + 1]) {
+                    const x =
+                        (Math.floor(currentX * this.dpr) + 0.5) / this.dpr;
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, headerHeight);
+                }
+            }
+        }
+        if (isFullRowSelection) {
+            currentY =
+                this.rowManager.getPosition(startRow, headerHeight) -
+                this.scrollY;
+            for (let i = startRow; i < endRow; i++) {
+                currentY += this.rowManager.getHeight(i);
+                if (selectedRows[i] && selectedRows[i + 1]) {
+                    const y =
+                        (Math.floor(currentY * this.dpr) + 0.5) / this.dpr;
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(headerWidth, y);
+                }
+            }
+        }
+        this.ctx.stroke();
 
+        // Main header border lines
+        this.ctx.strokeStyle = "#ccc";
+        this.ctx.beginPath();
+        const headerHeightLine =
+            (Math.floor(headerHeight * this.dpr) + 0.5) / this.dpr;
+        const headerWidthLine =
+            (Math.floor(headerWidth * this.dpr) + 0.5) / this.dpr;
         this.ctx.moveTo(0, headerHeightLine);
         this.ctx.lineTo(viewWidth, headerHeightLine);
         this.ctx.moveTo(headerWidthLine, 0);
         this.ctx.lineTo(headerWidthLine, viewHeight);
-
         this.ctx.stroke();
+
         this.ctx.restore();
     }
 
@@ -738,9 +849,10 @@ export class Grid {
 
     // Calculates the total width of the grid content.
     getTotalContentWidth() {
+        const visibleRange = this._getVisibleRange();
         const effectiveCols = Math.min(
             this.options.totalCols,
-            this.maxRenderedCol + 25
+            Math.max(visibleRange.endCol, this.cellManager.maxEditedCol) + 10
         );
         return this.columnManager.getPosition(
             effectiveCols,
@@ -750,9 +862,10 @@ export class Grid {
 
     // Calculates the total height of the grid content.
     getTotalContentHeight() {
+        const visibleRange = this._getVisibleRange();
         const effectiveRows = Math.min(
             this.options.totalRows,
-            this.maxRenderedRow + 25
+            Math.max(visibleRange.endRow, this.cellManager.maxEditedRow) + 10
         );
         return this.rowManager.getPosition(
             effectiveRows,

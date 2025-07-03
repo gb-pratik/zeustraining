@@ -5,6 +5,8 @@ export class CellManager {
     constructor() {
         this.cache = new Map();
         this.pendingFetches = new Set();
+        this.maxEditedRow = 0;
+        this.maxEditedCol = 0;
     }
 
     // Retrieves the value of a cell, checking the cache and then falling back to the database.
@@ -27,6 +29,7 @@ export class CellManager {
         const id = `${row}:${col}`;
         this.cache.set(id, value);
         await db.setData(db.CELL_STORE, { id, value });
+        this.updateMaxEditedCell(row, col);
     }
 
     async getCellRangeData(startCell, endCell) {
@@ -71,7 +74,7 @@ export class CellManager {
         return [...cachedValues, ...fetchedValues];
     }
 
-    // NEW: Synchronously gets all cached data for a given range. Used by the render loop.
+    // Synchronously gets all cached data for a given range. Used by the render loop.
     getVisibleCellDataFromCache(range) {
         const { startRow, endRow, startCol, endCol } = range;
         const dataMap = new Map();
@@ -130,4 +133,39 @@ export class CellManager {
             this.pendingFetches.delete(fetchKey);
         }
     }
+
+    // Updates the maximum edited row and column.
+    updateMaxEditedCell(row, col) {
+        let updated = false;
+        if (row > this.maxEditedRow) {
+            this.maxEditedRow = row;
+            updated = true;
+        }
+        if (col > this.maxEditedCol) {
+            this.maxEditedCol = col;
+            updated = true;
+        }
+        if (updated) {
+            this.saveMaxEditedCell();
+        }
+    }
+
+    // Saves the maximum edited cell to the database.
+    async saveMaxEditedCell() {
+        await db.setData(db.MAX_EDITED_CELL_STORE, {
+            id: "maxEdited",
+            row: this.maxEditedRow,
+            col: this.maxEditedCol,
+        });
+    }
+
+    // Loads the maximum edited cell from the database.
+    async loadMaxEditedCell() {
+        const data = await db.getData(db.MAX_EDITED_CELL_STORE, "maxEdited");
+        if (data) {
+            this.maxEditedRow = data.row || 0;
+            this.maxEditedCol = data.col || 0;
+        }
+    }
 }
+("");

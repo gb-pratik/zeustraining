@@ -1,8 +1,9 @@
 const DB_NAME = "GridDB";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const CELL_STORE = "cells";
 const COL_WIDTH_STORE = "colWidths";
 const ROW_HEIGHT_STORE = "rowHeights";
+const MAX_EDITED_CELL_STORE = "maxEditedCell";
 
 let db;
 
@@ -26,6 +27,11 @@ function initDB() {
             }
             if (!database.objectStoreNames.contains(ROW_HEIGHT_STORE)) {
                 database.createObjectStore(ROW_HEIGHT_STORE, { keyPath: "id" }); // id is rowIndex int
+            }
+            if (!database.objectStoreNames.contains(MAX_EDITED_CELL_STORE)) {
+                database.createObjectStore(MAX_EDITED_CELL_STORE, {
+                    keyPath: "id",
+                });
             }
         };
 
@@ -123,4 +129,5 @@ export {
     CELL_STORE,
     COL_WIDTH_STORE,
     ROW_HEIGHT_STORE,
+    MAX_EDITED_CELL_STORE,
 };

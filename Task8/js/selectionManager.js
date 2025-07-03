@@ -82,16 +82,11 @@ export class SelectionManager {
         return null;
     }
 
-    draw(ctx, scrollX, scrollY) {
-        if (!this.selection) return;
-
+    // Calculates the screen dimensions of the current selection.
+    _getSelectionBoundingBox(scrollX, scrollY) {
+        if (!this.selection) return null;
         const { rowManager, columnManager, options, canvas } = this.grid;
         const { headerHeight, headerWidth } = options;
-
-        ctx.fillStyle = "rgba(19, 126, 67,0.08)";
-        ctx.strokeStyle = "rgba(19, 126, 67,1)";
-        ctx.lineWidth = 2;
-
         let x, y, w, h;
 
         switch (this.selection.type) {
@@ -101,7 +96,112 @@ export class SelectionManager {
                 y = rowManager.getPosition(row, headerHeight) - scrollY;
                 w = columnManager.getWidth(col);
                 h = rowManager.getHeight(row);
-                // ctx.fillRect(x, y, w, h);
+                break;
+            }
+            case "range": {
+                const { start, end } = this.selection;
+                x = columnManager.getPosition(start.col, headerWidth) - scrollX;
+                y = rowManager.getPosition(start.row, headerHeight) - scrollY;
+                const endX =
+                    columnManager.getPosition(end.col + 1, headerWidth) -
+                    scrollX;
+                const endY =
+                    rowManager.getPosition(end.row, headerHeight) +
+                    rowManager.getHeight(end.row) -
+                    scrollY;
+                w = endX - x;
+                h = endY - y;
+                break;
+            }
+            case "col": {
+                const { col } = this.selection;
+                x = columnManager.getPosition(col, headerWidth) - scrollX;
+                y = headerHeight;
+                w = columnManager.getWidth(col);
+                h = canvas.clientHeight - headerHeight;
+                break;
+            }
+            case "row": {
+                const { row } = this.selection;
+                x = headerWidth;
+                y = rowManager.getPosition(row, headerHeight) - scrollY;
+                w = canvas.clientWidth - headerWidth;
+                h = rowManager.getHeight(row);
+                break;
+            }
+            default:
+                return null;
+        }
+        return { x, y, w, h };
+    }
+
+    // Draws the selection highlights on the headers.
+    drawHeaderHighlights(ctx, scrollX, scrollY) {
+        const box = this._getSelectionBoundingBox(scrollX, scrollY);
+        if (!box) return;
+
+        const { x, y, w, h } = box;
+        const { headerHeight, headerWidth } = this.grid.options;
+
+        ctx.save();
+        ctx.fillStyle = "rgba(19, 126, 67,0.3)";
+
+        // Draw column header highlight, clipped to the column header area
+        const colHighlightX = Math.max(x, headerWidth);
+        const colHighlightW = x + w - colHighlightX;
+        if (colHighlightW > 0) {
+            ctx.fillRect(colHighlightX, 0, colHighlightW, headerHeight);
+        }
+
+        // Draw row header highlight, clipped to the row header area
+        const rowHighlightY = Math.max(y, headerHeight);
+        const rowHighlightH = y + h - rowHighlightY;
+        if (rowHighlightH > 0) {
+            ctx.fillRect(0, rowHighlightY, headerWidth, rowHighlightH);
+        }
+
+        // Header highlights border
+        ctx.strokeStyle = "rgba(19, 126, 67,1)";
+        ctx.lineWidth = 2;
+
+        // Line at the bottom of the column header selection
+        if (x + w > headerWidth) {
+            ctx.beginPath();
+            ctx.moveTo(Math.max(x, headerWidth), headerHeight);
+            ctx.lineTo(x + w, headerHeight);
+            ctx.stroke();
+        }
+
+        // Line at the right of the row header selection
+        if (y + h > headerHeight) {
+            ctx.beginPath();
+            ctx.moveTo(headerWidth, Math.max(y, headerHeight));
+            ctx.lineTo(headerWidth, y + h);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+
+    // Draws the selection visuals within the grid's content area.
+    drawContent(ctx, scrollX, scrollY) {
+        if (!this.selection) return;
+
+        const { rowManager, columnManager, options, canvas } = this.grid;
+        const { headerHeight, headerWidth } = options;
+
+        ctx.save();
+        ctx.fillStyle = "rgba(19, 126, 67,0.08)";
+        let x, y, w, h;
+
+        switch (this.selection.type) {
+            case "cell": {
+                const { row, col } = this.selection;
+                x = columnManager.getPosition(col, headerWidth) - scrollX;
+                y = rowManager.getPosition(row, headerHeight) - scrollY;
+                w = columnManager.getWidth(col);
+                h = rowManager.getHeight(row);
+                ctx.fillRect(x, y, w, h);
                 break;
             }
             case "range": {
@@ -126,19 +226,14 @@ export class SelectionManager {
                 const anchorY =
                     rowManager.getPosition(anchorRow, headerHeight) - scrollY;
 
-                // Fill around the anchor cell
-                // Left of anchor
                 ctx.fillRect(x, y, anchorX - x, h);
-                // Right of anchor
                 ctx.fillRect(
                     anchorX + anchorW,
                     y,
                     x + w - (anchorX + anchorW),
                     h
                 );
-                // Above anchor
                 ctx.fillRect(anchorX, y, anchorW, anchorY - y);
-                // Below anchor
                 ctx.fillRect(
                     anchorX,
                     anchorY + anchorH,
@@ -152,43 +247,72 @@ export class SelectionManager {
                 x = columnManager.getPosition(col, headerWidth) - scrollX;
                 y = headerHeight;
                 w = columnManager.getWidth(col);
-                h = canvas.height - headerHeight;
-                ctx.fillRect(x, y, w, h);
+                h = canvas.clientHeight - headerHeight;
+
+                const anchorY =
+                    rowManager.getPosition(0, headerHeight) - scrollY;
+                const anchorH = rowManager.getHeight(0);
+
+                const fillStartY = anchorY + anchorH;
+                const drawY = Math.max(y, fillStartY);
+                const drawHeight = y + h - drawY;
+
+                if (drawHeight > 0) {
+                    ctx.fillRect(x, drawY, w, drawHeight);
+                }
                 break;
             }
             case "row": {
                 const { row } = this.selection;
                 x = headerWidth;
                 y = rowManager.getPosition(row, headerHeight) - scrollY;
-                w = canvas.width - headerWidth;
+                w = canvas.clientWidth - headerWidth;
                 h = rowManager.getHeight(row);
-                ctx.fillRect(x, y, w, h);
+
+                const anchorX =
+                    columnManager.getPosition(0, headerWidth) - scrollX;
+                const anchorW = columnManager.getWidth(0);
+
+                const fillStartX = anchorX + anchorW;
+                const drawX = Math.max(x, fillStartX);
+                const drawWidth = x + w - drawX;
+
+                if (drawWidth > 0) {
+                    ctx.fillRect(drawX, y, drawWidth, h);
+                }
                 break;
             }
             default:
+                ctx.restore();
                 return;
         }
 
-        // Draw header highlights and selection border
-        ctx.fillStyle = "rgba(19, 126, 67,0.3)";
-        ctx.fillRect(x, 0, w, headerHeight);
-        ctx.fillRect(0, y, headerWidth, h);
-        ctx.fillStyle = "rgb(0, 0, 0)";
+        // Get overall bounding box for the border and handle
+        const box = this._getSelectionBoundingBox(scrollX, scrollY);
+        if (!box) {
+            ctx.restore();
+            return;
+        }
+        const { x: boxX, y: boxY, w: boxW, h: boxH } = box;
 
-        ctx.strokeRect(x, headerHeight, w, 0);
-        ctx.strokeRect(headerWidth, y, 0, h);
+        // Draw content border and handle
+        ctx.strokeStyle = "rgba(19, 126, 67,1)";
+        ctx.lineWidth = 2;
+
         ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + w, y);
-        ctx.moveTo(x + w, y - 1);
-        ctx.lineTo(x + w, y + h - 4);
-        ctx.moveTo(x + w - 4, y + h);
-        ctx.lineTo(x, y + h);
-        ctx.moveTo(x, y + h + 1);
-        ctx.lineTo(x, y - 1);
+        ctx.moveTo(boxX, boxY);
+        ctx.lineTo(boxX + boxW, boxY);
+        ctx.moveTo(boxX + boxW, boxY - 1);
+        ctx.lineTo(boxX + boxW, boxY + boxH - 4);
+        ctx.moveTo(boxX + boxW - 4, boxY + boxH);
+        ctx.lineTo(boxX, boxY + boxH);
+        ctx.moveTo(boxX, boxY + boxH + 1);
+        ctx.lineTo(boxX, boxY - 1);
         ctx.stroke();
 
         ctx.fillStyle = "rgb(16,124,65)";
-        ctx.fillRect(x + w - 2.8, y + h - 2.8, 4.4, 4.4);
+        ctx.fillRect(boxX + boxW - 2.8, boxY + boxH - 2.8, 4.4, 4.4);
+
+        ctx.restore();
     }
 }
