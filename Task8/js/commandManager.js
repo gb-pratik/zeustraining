@@ -48,12 +48,14 @@ export class EditCellCommand {
 
     // Executes the cell edit.
     async execute() {
+        console.log("Yo");
         await this.cellManager.setCellValue(this.row, this.col, this.newValue);
         this.onComplete();
     }
 
     // Undoes the cell edit.
     async undo() {
+        console.log("Yo");
         await this.cellManager.setCellValue(this.row, this.col, this.oldValue);
         this.onComplete();
     }

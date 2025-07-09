@@ -1,7 +1,11 @@
 export class StatusBar {
-    constructor(statusBarElement) {
-        this.container = statusBarElement;
+    constructor(container) {
+        this.container = container;
+        this.element = document.createElement("div");
+        this.element.id = "status-bar";
+
         this._createDOMElements();
+        this.container.appendChild(this.element);
     }
 
     //  Creates the internal span elements and appends them to the container.
@@ -26,7 +30,7 @@ export class StatusBar {
 
         wrapper.appendChild(label);
         wrapper.appendChild(valueSpan);
-        this.container.appendChild(wrapper);
+        this.element.appendChild(wrapper); // Append to the status bar's own element
 
         return valueSpan; // Return the element we need to update
     }
@@ -50,12 +54,18 @@ export class StatusBar {
             this.clear();
             return;
         }
+
         const count = cellValues.length;
         this.countEl.textContent = count.toLocaleString();
+
         if (numbers.length === 0) {
-            // this.clear();
+            this.avgEl.textContent = "0";
+            this.minEl.textContent = "0";
+            this.maxEl.textContent = "0";
+            this.sumEl.textContent = "0";
             return;
         }
+
         const sum = numbers.reduce((a, b) => a + b, 0);
         const avg = sum / numbers.length;
         const min = Math.min(...numbers);
@@ -70,3 +80,34 @@ export class StatusBar {
         this.sumEl.textContent = sum.toLocaleString();
     }
 }
+
+//     // Updates the status bar with calculations based on the provided cell values.
+//     update(cellValues) {
+//         const numbers = cellValues
+//             .map((v) => parseFloat(v))
+//             .filter((n) => !isNaN(n));
+
+//         if (cellValues.length === 0) {
+//             this.clear();
+//             return;
+//         }
+//         const count = cellValues.length;
+//         this.countEl.textContent = count.toLocaleString();
+//         if (numbers.length === 0) {
+//             // this.clear();
+//             return;
+//         }
+//         const sum = numbers.reduce((a, b) => a + b, 0);
+//         const avg = sum / numbers.length;
+//         const min = Math.min(...numbers);
+//         const max = Math.max(...numbers);
+
+//         this.avgEl.textContent = avg.toLocaleString(undefined, {
+//             minimumFractionDigits: 2,
+//             maximumFractionDigits: 2,
+//         });
+//         this.minEl.textContent = min.toLocaleString();
+//         this.maxEl.textContent = max.toLocaleString();
+//         this.sumEl.textContent = sum.toLocaleString();
+//     }
+// }

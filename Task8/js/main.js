@@ -1,5 +1,6 @@
 import { Grid } from "./grid.js";
 import { initDB } from "./db.js";
+import { StatusBar } from "./statusBar.js";
 
 // Main entry point of the application.
 // This runs after the DOM is fully loaded.
@@ -11,7 +12,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         // The container element where the grid will be mounted.
         const appContainer = document.body;
 
-        const grid = new Grid(appContainer, {});
+        // StatusBar and FormulaBar will add themselves to appContainer.
+        // We instantiate StatusBar here and pass it to the Grid.
+        const statusBar = new StatusBar(appContainer);
+
+        const grid = new Grid(appContainer, { statusBar });
 
         await grid.columnManager.loadWidths();
         await grid.rowManager.loadHeights();

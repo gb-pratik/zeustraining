@@ -1,5 +1,5 @@
 const DB_NAME = "GridDB";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const CELL_STORE = "cells";
 const COL_WIDTH_STORE = "colWidths";
 const ROW_HEIGHT_STORE = "rowHeights";

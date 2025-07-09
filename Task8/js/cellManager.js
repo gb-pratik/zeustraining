@@ -5,8 +5,8 @@ export class CellManager {
     constructor() {
         this.cache = new Map();
         this.pendingFetches = new Set();
-        this.maxEditedRow = 0;
-        this.maxEditedCol = 0;
+        this.maxEditedRow = 100;
+        this.maxEditedCol = 100;
     }
 
     // Retrieves the value of a cell, checking the cache and then falling back to the database.
