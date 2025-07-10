@@ -120,18 +120,25 @@ html {
 
 .cell-editor {
     position: absolute;
-    border: none;
+    border: 2px solid #107c41;
     outline: none;
-    padding: 0;
+    padding: 1px 1px;
     margin: 0;
     box-sizing: border-box;
     font-family: Arial, sans-serif;
     font-size: 14px;
+    line-height: 1.4;
+    background-color: white;
+    z-index: 100000;
+
+    resize: none;
+    overflow: hidden;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 /* --- Status Bar Styles --- */
 #status-bar {
-    order: 1;
     height: 24px;
     flex-shrink: 0;
     background-color: #f3f3f3;
@@ -139,6 +146,7 @@ html {
     display: flex;
     align-items: center;
     padding: 0 15px;
+    order: 1;
     font-size: 13px;
     color: #333;
     gap: 25px;

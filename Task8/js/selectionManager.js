@@ -29,6 +29,7 @@ export class SelectionManager {
             this.selectCell(row, col);
         }
         console.log("Anchor point", this.anchorCell.row, this.anchorCell.col);
+        console.log("focus point", this.focusCell.row, this.focusCell.col);
     }
 
     // Extends the selection from the anchor cell to a new cell.
@@ -36,6 +37,7 @@ export class SelectionManager {
         if (!this.anchorCell) return;
 
         console.log("Anchor point", this.anchorCell.row, this.anchorCell.col);
+        console.log("focus point", this.focusCell.row, this.focusCell.col);
         console.log("HOLA");
         // Prevent extension if the relevant coordinate is invalid for the current mode.
         if (this.selectionMode === "row" && row === -1) return;

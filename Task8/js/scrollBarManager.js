@@ -191,8 +191,8 @@ export class ScrollBarManager {
         }
     }
 
-    // Handles mousedown to initiate dragging, paging, or arrow scrolling.
-    handleMouseDown(x, y) {
+    // Handles pointerdown to initiate dragging, paging, or arrow scrolling.
+    handlePointerDown(x, y) {
         // Arrow clicks
         if (this.arrows.vUp && this._isHit(this.arrows.vUp, x, y)) {
             this._startPaging("up");
@@ -236,8 +236,8 @@ export class ScrollBarManager {
         return false;
     }
 
-    // Handles mouse movement for thumb dragging.
-    handleMouseMove(x, y) {
+    // Handles pointer movement for thumb dragging.
+    handlePointerMove(x, y) {
         if (!this.isDragging) return;
         const dx = x - this.dragStartPos.x;
         const dy = y - this.dragStartPos.y;
@@ -268,14 +268,14 @@ export class ScrollBarManager {
         }
     }
 
-    // Resets dragging/paging state on mouse up.
-    handleMouseUp() {
+    // Resets dragging/paging state on pointer up.
+    handlePointerUp() {
         this.isDragging = null;
         this._stopPaging();
     }
 
     // Public method for the grid to check if a click is on any scrollbar part.
-    isMouseEventOnScrollBar(x, y) {
+    isPointerEventOnScrollBar(x, y) {
         return (
             (this.vTrack && this._isHit(this.vTrack, x, y)) ||
             (this.hTrack && this._isHit(this.hTrack, x, y))
