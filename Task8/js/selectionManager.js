@@ -97,7 +97,6 @@ export class SelectionManager {
     selectCol(col, shiftKey = false) {
         // This action's intent is column-based, so set the mode immediately.
         this.selectionMode = "col";
-
         if (shiftKey && this.anchorCell) {
             // Now that mode is 'col', extendTo will create the correct range type
             // using the anchor's column and the newly clicked column.
@@ -315,7 +314,7 @@ export class SelectionManager {
     }
 
     // Draws the selection visuals (fill, border, handle) in the main grid area.
-    drawContent(ctx, scrollX, scrollY) {
+    drawContent(ctx, scrollX, scrollY, type) {
         if (!this.selection) return;
 
         const { rowManager, columnManager, options } = this.grid;
@@ -383,19 +382,22 @@ export class SelectionManager {
         ctx.strokeStyle = "rgba(19, 126, 67,1)";
         ctx.lineWidth = 2;
 
-        ctx.beginPath();
-        ctx.moveTo(boxX, boxY);
-        ctx.lineTo(boxX + boxW, boxY);
-        ctx.moveTo(boxX + boxW, boxY - 1);
-        ctx.lineTo(boxX + boxW, boxY + boxH - 4);
-        ctx.moveTo(boxX + boxW - 4, boxY + boxH);
-        ctx.lineTo(boxX, boxY + boxH);
-        ctx.moveTo(boxX, boxY + boxH + 1);
-        ctx.lineTo(boxX, boxY - 1);
-        ctx.stroke();
+        if (type === 0) {
+        } else {
+            ctx.beginPath();
+            ctx.moveTo(boxX, boxY);
+            ctx.lineTo(boxX + boxW, boxY);
+            ctx.moveTo(boxX + boxW, boxY - 1);
+            ctx.lineTo(boxX + boxW, boxY + boxH - 4);
+            ctx.moveTo(boxX + boxW - 4, boxY + boxH);
+            ctx.lineTo(boxX, boxY + boxH);
+            ctx.moveTo(boxX, boxY + boxH + 1);
+            ctx.lineTo(boxX, boxY - 1);
+            ctx.stroke();
 
-        ctx.fillStyle = "rgb(16,124,65)";
-        ctx.fillRect(boxX + boxW - 2.8, boxY + boxH - 2.8, 4.4, 4.4);
+            ctx.fillStyle = "rgb(16,124,65)";
+            ctx.fillRect(boxX + boxW - 2.8, boxY + boxH - 2.8, 4.4, 4.4);
+        }
 
         ctx.restore();
     }

@@ -33,6 +33,7 @@ export class Grid {
         this.dpr = window.devicePixelRatio || 1;
         this.scrollX = 0;
         this.scrollY = 0;
+        this.selectionOutlineState = 1;
         this.interactionState = "none";
         this.interactionData = null;
         this.animationFrameId = null;
@@ -161,7 +162,13 @@ export class Grid {
         this._drawGridLines(visibleRange);
         this._drawVisibleCellData(visibleRange, visibleCellData);
 
-        this.selectionManager.drawContent(this.ctx, this.scrollX, this.scrollY);
+        this.selectionManager.drawContent(
+            this.ctx,
+            this.scrollX,
+            this.scrollY,
+            this.selectionOutlineState
+        );
+        this.selectionOutlineState = 1;
 
         this.ctx.restore();
 
@@ -671,7 +678,7 @@ export class Grid {
             this._updateAutoScrollState(x, y);
             // dont return
 
-            // allow mult rowcol select
+            // allow mult rowcol select flow
             const rowIndex = this._getRowIndexAt(y);
             const colIndex = this._getColIndexAt(x);
             this.selectionManager.extendTo(rowIndex, colIndex);
@@ -912,6 +919,34 @@ export class Grid {
         }, 16);
     }
 
+    //     _startAutoScroll() {
+    //     if (this.autoScrollRequestId) return;
+
+    //     const step = () => {
+    //         if (!this.interactionData || !this.interactionData.scrollSpeed) {
+    //             this._stopAutoScroll();
+    //             return;
+    //         }
+
+    //         // Scroll the grid
+    //         const { x: speedX, y: speedY } = this.interactionData.scrollSpeed;
+    //         this._onScrollBarScroll(speedX, speedY);
+
+    //         // Extend the selection
+    //         const { lastMouseX, lastMouseY } = this.interactionData;
+    //         const rowIndex = this._getRowIndexAt(lastMouseY);
+    //         const colIndex = this._getColIndexAt(lastMouseX);
+
+    //         this.selectionManager.extendTo(rowIndex, colIndex);
+
+    //         // Schedule next frame
+    //         this.autoScrollRequestId = requestAnimationFrame(step);
+    //     };
+
+    //     // Start the first frame
+    //     this.autoScrollRequestId = requestAnimationFrame(step);
+    // }
+
     _stopAutoScroll() {
         if (this.autoScrollIntervalId) {
             clearInterval(this.autoScrollIntervalId);
@@ -950,6 +985,8 @@ export class Grid {
         const editor = document.createElement("textarea");
         editor.className = "cell-editor";
         editor.value = initialValue !== null ? initialValue : oldValue;
+        this.selectionOutlineState = 0;
+        this.requestDraw();
 
         const helper = document.createElement("span");
         helper.className = "cell-editor";
@@ -1004,7 +1041,7 @@ export class Grid {
                 Math.max(baseWidth, requiredContentWidth + 10), // 10 just for padding
                 maxAllowedWidth
             );
-            editor.style.width = `${newWidth}px`;
+            editor.style.width = `${newWidth + 2}px`;
 
             // noice add a small buffer to prevent the textarea's own scrollbar from appearing.
             editor.style.height = `${editor.scrollHeight + 2}px`;
