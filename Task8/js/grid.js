@@ -10,6 +10,7 @@ import {
 } from "./commandManager.js";
 import { FormulaBar } from "./formulaBar.js";
 import { ScrollBarManager } from "./scrollBarManager.js";
+import { InteractionManager } from "./interactionManager.js"; // Import the new manager
 
 export class Grid {
     // Initializes the grid, sets up options, creates DOM elements, and initializes managers.
@@ -34,10 +35,9 @@ export class Grid {
         this.scrollX = 0;
         this.scrollY = 0;
         this.selectionOutlineState = 1;
-        this.interactionState = "none";
-        this.interactionData = null;
         this.animationFrameId = null;
-        this.autoScrollIntervalId = null; // For auto-scrolling during selection
+
+        // --- Manager Initializations ---
         this.commandManager = new CommandManager();
         this.cellManager = new CellManager(this);
         this.columnManager = new ColumnManager({
@@ -59,6 +59,8 @@ export class Grid {
             this,
             this._onScrollBarScroll.bind(this)
         );
+
+        this.interactionManager = new InteractionManager(this);
 
         this._bindEvents();
         this.resizeCanvas();
@@ -90,17 +92,24 @@ export class Grid {
     // Binds all necessary event listeners (pointer, keyboard, resize).
     _bindEvents() {
         window.addEventListener("resize", this.resizeCanvas.bind(this));
+        // REFACTORED: Pointer events are now delegated to the InteractionManager.
         this.canvas.addEventListener(
             "pointerdown",
-            this._handlePointerDown.bind(this)
+            this.interactionManager.handlePointerDown.bind(
+                this.interactionManager
+            )
         );
         window.addEventListener(
             "pointermove",
-            this._handleGlobalPointerMove.bind(this)
+            this.interactionManager.handlePointerMove.bind(
+                this.interactionManager
+            )
         );
         window.addEventListener(
             "pointerup",
-            this._handleGlobalPointerUp.bind(this)
+            this.interactionManager.handlePointerUp.bind(
+                this.interactionManager
+            )
         );
         this.canvas.addEventListener(
             "dblclick",
@@ -157,8 +166,6 @@ export class Grid {
         );
         this.ctx.clip();
 
-        // **FIX**: Draw data (and overflow backgrounds) BEFORE gridlines
-        // This ensures gridlines are drawn on top of the white overflow background.
         this._drawGridLines(visibleRange);
         this._drawVisibleCellData(visibleRange, visibleCellData);
 
@@ -570,174 +577,6 @@ export class Grid {
         }
     }
 
-    _handlePointerDown(e) {
-        const { x, y } = this._getPointerPos(e);
-
-        if (this.scrollBarManager.isPointerEventOnScrollBar(x, y)) {
-            if (this.scrollBarManager.handlePointerDown(x, y)) {
-                this.interactionState = "scrolling";
-            }
-            return;
-        }
-
-        const { headerWidth, headerHeight } = this.options;
-        const resizeHandle = this._getResizeHandle(x, y);
-        if (resizeHandle) {
-            if (resizeHandle.type === "col") {
-                this.interactionState = "resizing-col";
-                this.interactionData = {
-                    colIndex: resizeHandle.index,
-                    startX: x,
-                    originalWidth: this.columnManager.getWidth(
-                        resizeHandle.index
-                    ),
-                };
-                this.canvas.style.cursor = "col-resize";
-            } else {
-                this.interactionState = "resizing-row";
-                this.interactionData = {
-                    rowIndex: resizeHandle.index,
-                    startY: y,
-                    originalHeight: this.rowManager.getHeight(
-                        resizeHandle.index
-                    ),
-                };
-                this.canvas.style.cursor = "row-resize";
-            }
-        } else if (x < headerWidth && y > headerHeight) {
-            const rowIndex = this._getRowIndexAt(y);
-            if (rowIndex !== -1) {
-                this.selectionManager.selectRow(rowIndex, e.shiftKey);
-                this.interactionState = "selecting";
-                this.interactionData = { lastPointerX: x, lastPointerY: y };
-                this.requestDraw();
-            }
-        } else if (y < headerHeight && x > headerWidth) {
-            const colIndex = this._getColIndexAt(x);
-            if (colIndex !== -1) {
-                this.selectionManager.selectCol(colIndex, e.shiftKey);
-                this.interactionState = "selecting";
-                this.interactionData = { lastPointerX: x, lastPointerY: y };
-                this.requestDraw();
-            }
-        } else if (x < headerWidth && y < headerHeight) {
-            this.selectionManager.selectAll();
-            this.requestDraw();
-        } else if (x > headerWidth && y > headerHeight) {
-            const rowIndex = this._getRowIndexAt(y);
-            const colIndex = this._getColIndexAt(x);
-            if (rowIndex !== -1 && colIndex !== -1) {
-                this.selectionManager.setAnchor(rowIndex, colIndex, e.shiftKey);
-                this.interactionState = "selecting";
-                this.interactionData = { lastPointerX: x, lastPointerY: y };
-                this.requestDraw();
-            }
-        }
-    }
-
-    _handleGlobalPointerMove(e) {
-        const { x, y } = this._getPointerPos(e);
-
-        if (this.interactionState === "scrolling") {
-            this.scrollBarManager.handlePointerMove(x, y);
-            return;
-        }
-
-        if (this.interactionState === "resizing-col") {
-            const dx = x - this.interactionData.startX;
-            const newWidth = Math.max(
-                20,
-                this.interactionData.originalWidth + dx
-            );
-            this.columnManager.customWidths.set(
-                this.interactionData.colIndex,
-                newWidth
-            );
-            this.columnManager.positionCache.clear();
-            this.columnManager.sortedCustomWidths = null;
-            // this.requestDraw();
-        } else if (this.interactionState === "resizing-row") {
-            const dy = y - this.interactionData.startY;
-            const newHeight = Math.max(
-                20,
-                this.interactionData.originalHeight + dy
-            );
-            this.rowManager.customHeights.set(
-                this.interactionData.rowIndex,
-                newHeight
-            );
-            this.rowManager.positionCache.clear();
-            this.rowManager.sortedCustomHeights = null;
-            // this.requestDraw();
-        } else if (this.interactionState === "selecting") {
-            if (this.interactionData) {
-                this.interactionData.lastPointerX = x;
-                this.interactionData.lastPointerY = y;
-            }
-
-            this._updateAutoScrollState(x, y);
-            // dont return
-
-            // allow mult rowcol select flow
-            const rowIndex = this._getRowIndexAt(y);
-            const colIndex = this._getColIndexAt(x);
-            this.selectionManager.extendTo(rowIndex, colIndex);
-
-            this.requestDraw();
-        } else if (e.target === this.canvas) {
-            this._handlePointerMove(e);
-        }
-    }
-
-    _handlePointerMove(e) {
-        if (this.interactionState !== "none") return;
-        const { x, y } = this._getPointerPos(e);
-        const resizeHandle = this._getResizeHandle(x, y);
-        this.canvas.style.cursor = resizeHandle
-            ? resizeHandle.type === "col"
-                ? "col-resize"
-                : "row-resize"
-            : "default";
-    }
-
-    async _handleGlobalPointerUp(e) {
-        this._stopAutoScroll();
-
-        if (this.interactionState === "scrolling") {
-            this.scrollBarManager.handlePointerUp();
-        } else if (this.interactionState === "resizing-col") {
-            const { colIndex, originalWidth } = this.interactionData;
-            const newWidth = this.columnManager.getWidth(colIndex);
-            if (newWidth !== originalWidth) {
-                const command = new ResizeColCommand(
-                    this.columnManager,
-                    colIndex,
-                    originalWidth,
-                    newWidth,
-                    () => this.requestDraw()
-                );
-                this.commandManager.execute(command);
-            }
-        } else if (this.interactionState === "resizing-row") {
-            const { rowIndex, originalHeight } = this.interactionData;
-            const newHeight = this.rowManager.getHeight(rowIndex);
-            if (newHeight !== originalHeight) {
-                const command = new ResizeRowCommand(
-                    this.rowManager,
-                    rowIndex,
-                    originalHeight,
-                    newHeight,
-                    () => this.requestDraw()
-                );
-                this.commandManager.execute(command);
-            }
-        }
-        this.interactionState = "none";
-        this.interactionData = null;
-        this.canvas.style.cursor = "default";
-        this.requestDraw();
-    }
-
     _handleDoubleClick(e) {
         const { x, y } = this._getPointerPos(e);
         const { headerWidth, headerHeight } = this.options;
@@ -863,97 +702,6 @@ export class Grid {
         this.requestDraw();
     }
 
-    _updateAutoScrollState(x, y) {
-        const { headerWidth, headerHeight } = this.options;
-        const viewWidth = this.canvas.clientWidth;
-        const viewHeight = this.canvas.clientHeight;
-        const hotZone = 30;
-        const maxSpeed = 20;
-
-        let scrollSpeedX = 0;
-        let scrollSpeedY = 0;
-
-        if (x > viewWidth - hotZone) {
-            scrollSpeedX = maxSpeed * ((x - (viewWidth - hotZone)) / hotZone);
-        }
-        if (x < headerWidth + hotZone) {
-            scrollSpeedX = -maxSpeed * ((headerWidth + hotZone - x) / hotZone);
-        }
-        if (y > viewHeight - hotZone) {
-            scrollSpeedY = maxSpeed * ((y - (viewHeight - hotZone)) / hotZone);
-        }
-        if (y < headerHeight + hotZone) {
-            scrollSpeedY = -maxSpeed * ((headerHeight + hotZone - y) / hotZone);
-        }
-
-        if (scrollSpeedX !== 0 || scrollSpeedY !== 0) {
-            if (this.interactionData) {
-                this.interactionData.scrollSpeed = {
-                    x: scrollSpeedX,
-                    y: scrollSpeedY,
-                };
-            }
-            this._startAutoScroll();
-        } else {
-            this._stopAutoScroll();
-        }
-    }
-
-    _startAutoScroll() {
-        if (this.autoScrollIntervalId) return;
-
-        this.autoScrollIntervalId = setInterval(() => {
-            if (!this.interactionData || !this.interactionData.scrollSpeed) {
-                this._stopAutoScroll();
-                return;
-            }
-
-            const { x: speedX, y: speedY } = this.interactionData.scrollSpeed;
-            this._onScrollBarScroll(speedX, speedY);
-
-            const { lastPointerX, lastPointerY } = this.interactionData;
-            const rowIndex = this._getRowIndexAt(lastPointerY);
-            const colIndex = this._getColIndexAt(lastPointerX);
-
-            this.selectionManager.extendTo(rowIndex, colIndex);
-        }, 16);
-    }
-
-    //     _startAutoScroll() {
-    //     if (this.autoScrollRequestId) return;
-
-    //     const step = () => {
-    //         if (!this.interactionData || !this.interactionData.scrollSpeed) {
-    //             this._stopAutoScroll();
-    //             return;
-    //         }
-
-    //         // Scroll the grid
-    //         const { x: speedX, y: speedY } = this.interactionData.scrollSpeed;
-    //         this._onScrollBarScroll(speedX, speedY);
-
-    //         // Extend the selection
-    //         const { lastMouseX, lastMouseY } = this.interactionData;
-    //         const rowIndex = this._getRowIndexAt(lastMouseY);
-    //         const colIndex = this._getColIndexAt(lastMouseX);
-
-    //         this.selectionManager.extendTo(rowIndex, colIndex);
-
-    //         // Schedule next frame
-    //         this.autoScrollRequestId = requestAnimationFrame(step);
-    //     };
-
-    //     // Start the first frame
-    //     this.autoScrollRequestId = requestAnimationFrame(step);
-    // }
-
-    _stopAutoScroll() {
-        if (this.autoScrollIntervalId) {
-            clearInterval(this.autoScrollIntervalId);
-            this.autoScrollIntervalId = null;
-        }
-    }
-
     _onScrollBarScroll(dx, dy) {
         const maxScrollX = Math.max(
             0,
@@ -993,14 +741,12 @@ export class Grid {
         helper.style.position = "absolute";
         helper.style.left = "-9999px";
         helper.style.top = "-9999px";
-        // prevent wrapping to get exact width
-        helper.style.whiteSpace = "pre"; // dont let it wrap since width metric is needed
+        helper.style.whiteSpace = "pre";
 
         this.gridContainer.appendChild(helper);
 
         const finishEditing = () => {
             if (!this.gridContainer.contains(editor)) return;
-            // Also remove the helper element to clean up the DOM
             this.gridContainer.removeChild(helper);
             const newValue = editor.value;
             this.commitCellEdit(row, col, oldValue, newValue);
@@ -1009,12 +755,9 @@ export class Grid {
         };
 
         const updateEditorSize = () => {
-            // calc the max width the editor can expand to.
-            // limited by the next non-empty cell or the viewport edge.
             const visibleRange = this._getVisibleRange();
             let maxAllowedWidth = this.columnManager.getWidth(col);
             let viewportWidth = this.gridContainer.clientWidth;
-            // Account for the vertical scrollbar if it's visible.
             if (this.scrollBarManager.vThumb) {
                 viewportWidth -= this.scrollBarManager.size;
             }
@@ -1023,7 +766,6 @@ export class Grid {
                 if (this.cellManager.cache.get(`${row}:${c2}`)) break;
 
                 const nextWidth = this.columnManager.getWidth(c2);
-                // Check if adding the next cell exceeds the viewport boundary.
                 if (x + maxAllowedWidth + nextWidth > viewportWidth) {
                     maxAllowedWidth = viewportWidth - x;
                     break;
@@ -1031,19 +773,16 @@ export class Grid {
                 maxAllowedWidth += nextWidth;
             }
 
-            // Measure the text's actual required width using the stable helper.
             helper.textContent = editor.value;
             const requiredContentWidth = helper.offsetWidth;
 
-            // set the final editor width.
             const baseWidth = this.columnManager.getWidth(col);
             const newWidth = Math.min(
-                Math.max(baseWidth, requiredContentWidth + 10), // 10 just for padding
+                Math.max(baseWidth, requiredContentWidth + 10),
                 maxAllowedWidth
             );
             editor.style.width = `${newWidth + 2}px`;
 
-            // noice add a small buffer to prevent the textarea's own scrollbar from appearing.
             editor.style.height = `${editor.scrollHeight + 2}px`;
         };
 
@@ -1081,7 +820,6 @@ export class Grid {
             editor.setSelectionRange(editor.value.length, editor.value.length);
         }
 
-        // on start to ensure correct initial size.
         updateEditorSize();
 
         this.formulaBar.formulaInput.value = editor.value;
@@ -1145,7 +883,7 @@ export class Grid {
     }
 
     // --- Utility and Helper Functions ---
-    // All functions below here are unchanged.
+    // These functions are unchanged but are now used by the new interaction handlers.
 
     getEffectiveMaxRow() {
         const visibleRange = this._getVisibleRange();
