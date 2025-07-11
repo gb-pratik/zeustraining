@@ -2,10 +2,11 @@ export class SelectionManager {
     // Initializes the selection manager.
     constructor(grid, onSelectionChange) {
         this.grid = grid;
-        this.selection = null;
-        this.anchorCell = null;
-        this.focusCell = null;
+        this.selection = { type: "cell", row: 4, col: 7 };
+        this.anchorCell = { row: 4, col: 7 };
+        this.focusCell = { row: 4, col: 7 };
         this.onSelectionChange = onSelectionChange;
+        this.onSelectionChange(this.selection);
         this.selectionMode = "cell";
     }
 

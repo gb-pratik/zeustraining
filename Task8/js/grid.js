@@ -36,6 +36,7 @@ export class Grid {
         this.scrollY = 0;
         this.selectionOutlineState = 1;
         this.animationFrameId = null;
+        this.resizeIndicator = null; // To hold {type, index, position}
 
         // --- Manager Initializations ---
         this.commandManager = new CommandManager();
@@ -179,6 +180,9 @@ export class Grid {
 
         this.ctx.restore();
 
+        // Draw resize indicator on top of content but not on top of headers/scrollbars
+        this._drawResizeIndicator();
+
         this.selectionManager.drawHeaderHighlights(
             this.ctx,
             this.scrollX,
@@ -199,6 +203,40 @@ export class Grid {
             });
     }
 
+    _drawResizeIndicator() {
+        if (!this.resizeIndicator) return;
+
+        const { type, position } = this.resizeIndicator;
+        const { headerWidth, headerHeight } = this.options;
+        const viewWidth = this.canvas.clientWidth;
+        const viewHeight = this.canvas.clientHeight;
+
+        this.ctx.save();
+        this.ctx.strokeStyle = "rgb(16, 124, 65)"; // Excel green
+        this.ctx.lineWidth = 2; // A nice, visible width
+        this.ctx.setLineDash([4, 4]);
+
+        this.ctx.beginPath();
+        if (type === "col") {
+            const x = position;
+            // Ensure line is only drawn in the content area and viewable bounds
+            if (x > headerWidth) {
+                this.ctx.moveTo(x, headerHeight);
+                this.ctx.lineTo(x, viewHeight);
+            }
+        } else {
+            // type === 'row'
+            const y = position;
+            // Ensure line is only drawn in the content area and viewable bounds
+            if (y > headerHeight) {
+                this.ctx.moveTo(headerWidth, y);
+                this.ctx.lineTo(viewWidth, y);
+            }
+        }
+        this.ctx.stroke();
+        this.ctx.restore();
+    }
+
     // Draws the grid lines for the visible range of cells.
     _drawGridLines(visibleRange) {
         const { startRow, endRow, startCol, endCol } = visibleRange;
@@ -206,7 +244,18 @@ export class Grid {
         const viewWidth = this.canvas.clientWidth;
         const viewHeight = this.canvas.clientHeight;
 
+        const resizingColIndex =
+            this.resizeIndicator && this.resizeIndicator.type === "col"
+                ? this.resizeIndicator.index
+                : -1;
+        const resizingRowIndex =
+            this.resizeIndicator && this.resizeIndicator.type === "row"
+                ? this.resizeIndicator.index
+                : -1;
+
         this.ctx.save();
+
+        // --- Draw default (grey) grid lines ---
         this.ctx.lineWidth = 1 / this.dpr;
         this.ctx.strokeStyle = "rgb(224, 224, 224)";
         this.ctx.beginPath();
@@ -215,10 +264,18 @@ export class Grid {
             this.columnManager.getPosition(startCol, headerWidth) -
             this.scrollX;
         for (let i = startCol; i <= endCol + 1; i++) {
-            const x = (Math.floor(currentX * this.dpr) + 0.5) / this.dpr;
-            if (x > headerWidth) {
-                this.ctx.moveTo(x, headerHeight);
-                this.ctx.lineTo(x, viewHeight);
+            // A line is the left border of column `i`.
+            // If resizing col `N`, highlight its left border (`i=N`) and right border (`i=N+1`).
+            const isHighlightedColLine =
+                resizingColIndex !== -1 &&
+                (i === resizingColIndex || i === resizingColIndex + 1);
+
+            if (!isHighlightedColLine) {
+                const x = (Math.floor(currentX * this.dpr) + 0.5) / this.dpr;
+                if (x > headerWidth) {
+                    this.ctx.moveTo(x, headerHeight);
+                    this.ctx.lineTo(x, viewHeight);
+                }
             }
             if (i <= endCol) {
                 currentX += this.columnManager.getWidth(i);
@@ -228,16 +285,86 @@ export class Grid {
         let currentY =
             this.rowManager.getPosition(startRow, headerHeight) - this.scrollY;
         for (let i = startRow; i <= endRow + 1; i++) {
-            const y = (Math.floor(currentY * this.dpr) + 0.5) / this.dpr;
-            if (y > headerHeight) {
-                this.ctx.moveTo(headerWidth, y);
-                this.ctx.lineTo(viewWidth, y);
+            // A line is the top border of row `i`.
+            // If resizing row `N`, highlight its top border (`i=N`) and bottom border (`i=N+1`).
+            const isHighlightedRowLine =
+                resizingRowIndex !== -1 &&
+                (i === resizingRowIndex || i === resizingRowIndex + 1);
+
+            if (!isHighlightedRowLine) {
+                const y = (Math.floor(currentY * this.dpr) + 0.5) / this.dpr;
+                if (y > headerHeight) {
+                    this.ctx.moveTo(headerWidth, y);
+                    this.ctx.lineTo(viewWidth, y);
+                }
             }
             if (i <= endRow) {
                 currentY += this.rowManager.getHeight(i);
             }
         }
         this.ctx.stroke();
+
+        // --- Draw highlighted (green) grid lines separately ---
+        if (resizingColIndex !== -1 || resizingRowIndex !== -1) {
+            this.ctx.strokeStyle = "rgb(16, 124, 65)";
+            this.ctx.lineWidth = 2 / this.dpr;
+            this.ctx.beginPath();
+
+            if (resizingColIndex !== -1) {
+                // Draw left border of the resizing column
+                const xPosLeft =
+                    this.columnManager.getPosition(
+                        resizingColIndex,
+                        headerWidth
+                    ) - this.scrollX;
+                const xLeft =
+                    (Math.floor(xPosLeft * this.dpr) + 0.5) / this.dpr;
+                if (xLeft >= headerWidth) {
+                    this.ctx.moveTo(xLeft, headerHeight);
+                    this.ctx.lineTo(xLeft, viewHeight);
+                }
+                // Draw right border of the resizing column
+                const xPosRight =
+                    this.columnManager.getPosition(
+                        resizingColIndex + 1,
+                        headerWidth
+                    ) - this.scrollX;
+                const xRight =
+                    (Math.floor(xPosRight * this.dpr) + 0.5) / this.dpr;
+                if (xRight > headerWidth) {
+                    this.ctx.moveTo(xRight, headerHeight);
+                    this.ctx.lineTo(xRight, viewHeight);
+                }
+            }
+
+            if (resizingRowIndex !== -1) {
+                // Draw top border of the resizing row
+                const yPosTop =
+                    this.rowManager.getPosition(
+                        resizingRowIndex,
+                        headerHeight
+                    ) - this.scrollY;
+                const yTop = (Math.floor(yPosTop * this.dpr) + 0.5) / this.dpr;
+                if (yTop >= headerHeight) {
+                    this.ctx.moveTo(headerWidth, yTop);
+                    this.ctx.lineTo(viewWidth, yTop);
+                }
+                // Draw bottom border of the resizing row
+                const yPosBottom =
+                    this.rowManager.getPosition(
+                        resizingRowIndex + 1,
+                        headerHeight
+                    ) - this.scrollY;
+                const yBottom =
+                    (Math.floor(yPosBottom * this.dpr) + 0.5) / this.dpr;
+                if (yBottom > headerHeight) {
+                    this.ctx.moveTo(headerWidth, yBottom);
+                    this.ctx.lineTo(viewWidth, yBottom);
+                }
+            }
+            this.ctx.stroke();
+        }
+
         this.ctx.restore();
     }
 
@@ -774,11 +901,22 @@ export class Grid {
             }
 
             helper.textContent = editor.value;
-            const requiredContentWidth = helper.offsetWidth;
+            let requiredContentWidth = helper.offsetWidth;
+            let upperBoundWidth = 0;
+            for (let c2 = col; c2 <= visibleRange.endCol + 1; c2++) {
+                upperBoundWidth += this.columnManager.getWidth(c2);
+                if (upperBoundWidth >= requiredContentWidth) {
+                    break;
+                }
+            }
 
+            requiredContentWidth = Math.max(
+                requiredContentWidth,
+                upperBoundWidth
+            );
             const baseWidth = this.columnManager.getWidth(col);
             const newWidth = Math.min(
-                Math.max(baseWidth, requiredContentWidth + 10),
+                Math.max(baseWidth, requiredContentWidth),
                 maxAllowedWidth
             );
             editor.style.width = `${newWidth + 2}px`;

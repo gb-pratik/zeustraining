@@ -37,6 +37,14 @@ export class ColumnResizeInteraction {
             startX: x,
             originalWidth: this.grid.columnManager.getWidth(resizeHandle.index),
         };
+
+        // Set the resize indicator state
+        this.grid.resizeIndicator = {
+            type: "col",
+            index: resizeHandle.index,
+            position: x,
+        };
+        this.grid.requestDraw();
     }
 
     /**
@@ -45,16 +53,13 @@ export class ColumnResizeInteraction {
      */
     onPointerMove(e) {
         if (!this.interactionData) return;
+
+        // Update indicator position instead of resizing
         const { x } = this.grid._getPointerPos(e);
-        const dx = x - this.interactionData.startX;
-        const newWidth = Math.max(20, this.interactionData.originalWidth + dx);
-        this.grid.columnManager.customWidths.set(
-            this.interactionData.colIndex,
-            newWidth
-        );
-        this.grid.columnManager.positionCache.clear();
-        this.grid.columnManager.sortedCustomWidths = null;
-        this.grid.requestDraw();
+        if (this.grid.resizeIndicator) {
+            this.grid.resizeIndicator.position = x;
+            this.grid.requestDraw();
+        }
     }
 
     /**
@@ -63,8 +68,16 @@ export class ColumnResizeInteraction {
      */
     onPointerUp(e) {
         if (!this.interactionData) return;
+
+        // Calculate final width and apply it
+        const { x } = this.grid._getPointerPos(e);
+        const dx = x - this.interactionData.startX;
         const { colIndex, originalWidth } = this.interactionData;
-        const newWidth = this.grid.columnManager.getWidth(colIndex);
+        const newWidth = Math.max(20, originalWidth + dx);
+
+        // Reset indicator before executing command or redrawing
+        this.grid.resizeIndicator = null;
+
         if (newWidth !== originalWidth) {
             const command = new ResizeColCommand(
                 this.grid.columnManager,
@@ -74,7 +87,11 @@ export class ColumnResizeInteraction {
                 () => this.grid.requestDraw()
             );
             this.grid.commandManager.execute(command);
+        } else {
+            // If no change, we still need to redraw to remove the indicator
+            this.grid.requestDraw();
         }
+
         this.interactionData = null;
     }
 }
